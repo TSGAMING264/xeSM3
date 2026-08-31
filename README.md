@@ -182,7 +182,7 @@ The post-processing fix is **not included** in xeSM3 v0.1.0. It is still planned
 
 **Haruse** — Huge shoutout for the Web of Shadows Blender tooling, including the texture conversion workflow and material/model research that provided useful reference material while adapting similar ideas for Spider-Man 3.
 
-**[tmprogamer](https://next.nexusmods.com/profile/tmprogamer)** — Huge thanks for beta testing xeSM3 and putting the loader through real-world testing.
+**Tmprogamer** — Huge thanks for beta testing xeSM3 and putting the loader through real-world testing.
 
 **ArchiverOfTriviality** — Huge thanks for beta testing xeSM3 and helping verify stability, compatibility, and mod-loading behavior.
 
