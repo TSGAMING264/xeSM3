@@ -1,0 +1,7 @@
+PROVEN BASELINE
+===============
+
+Source archive: XESM3_V0_1_6_1_X86_CONFIG_FIX_SOURCE.zip
+SHA256: 41f4f3990564080325ef634befc45e9192c72248519833b9c3829e1294408e72
+
+This release-candidate folder is a COPY. Do not overwrite or delete the proven baseline archive.

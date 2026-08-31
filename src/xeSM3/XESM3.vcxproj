@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32"><Configuration>Debug</Configuration><Platform>Win32</Platform></ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32"><Configuration>Release</Configuration><Platform>Win32</Platform></ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals"><VCProjectVersion>17.0</VCProjectVersion><Keyword>Win32Proj</Keyword><ProjectGuid>{7D94CC53-2255-4CB4-B178-A6990BC01010}</ProjectGuid><RootNamespace>XESM3</RootNamespace><WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion></PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration"><ConfigurationType>DynamicLibrary</ConfigurationType><UseDebugLibraries>true</UseDebugLibraries><PlatformToolset>v143</PlatformToolset><CharacterSet>Unicode</CharacterSet></PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration"><ConfigurationType>DynamicLibrary</ConfigurationType><UseDebugLibraries>false</UseDebugLibraries><PlatformToolset>v143</PlatformToolset><WholeProgramOptimization>true</WholeProgramOptimization><CharacterSet>Unicode</CharacterSet></PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <PropertyGroup><IntDir>$(ProjectDir).xesm3_build\payload\x86\$(Configuration)\</IntDir><OutDir>$(ProjectDir)bin\x86\$(Configuration)\</OutDir><TargetName>xeSM3</TargetName></PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile><WarningLevel>Level3</WarningLevel><SDLCheck>true</SDLCheck><PreprocessorDefinitions>WIN32;_DEBUG;XESM3_PUBLIC_BUILD;XESM3_X86_ONLY=1;XESM3_BOOT_DIAGNOSTIC=1;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions><ConformanceMode>true</ConformanceMode><PrecompiledHeader>NotUsing</PrecompiledHeader><RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary></ClCompile>
+    <Link><AdditionalDependencies>User32.lib;%(AdditionalDependencies)</AdditionalDependencies><SubSystem>Windows</SubSystem><GenerateDebugInformation>true</GenerateDebugInformation><EnableUAC>false</EnableUAC><TargetMachine>MachineX86</TargetMachine><ModuleDefinitionFile>XESM3.def</ModuleDefinitionFile></Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile><WarningLevel>Level3</WarningLevel><FunctionLevelLinking>true</FunctionLevelLinking><IntrinsicFunctions>true</IntrinsicFunctions><SDLCheck>true</SDLCheck><PreprocessorDefinitions>WIN32;NDEBUG;XESM3_PUBLIC_BUILD;XESM3_X86_ONLY=1;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions><ConformanceMode>true</ConformanceMode><PrecompiledHeader>NotUsing</PrecompiledHeader><Optimization>MaxSpeed</Optimization><WholeProgramOptimization>true</WholeProgramOptimization><RuntimeLibrary>MultiThreaded</RuntimeLibrary><OmitFramePointers>true</OmitFramePointers></ClCompile>
+    <Link><AdditionalDependencies>User32.lib;%(AdditionalDependencies)</AdditionalDependencies><SubSystem>Windows</SubSystem><EnableCOMDATFolding>true</EnableCOMDATFolding><OptimizeReferences>true</OptimizeReferences><GenerateDebugInformation>true</GenerateDebugInformation><EnableUAC>false</EnableUAC><TargetMachine>MachineX86</TargetMachine><ModuleDefinitionFile>XESM3.def</ModuleDefinitionFile></Link>
+  </ItemDefinitionGroup>
+  <ItemGroup><ClCompile Include="dllmain.cpp" /><ClCompile Include="XESM3ResourceRedirector.cpp" /><ClCompile Include="XESM3RuntimeOptions.cpp" /></ItemGroup>
+  <ItemGroup><ClInclude Include="XESM3X86Only.hpp" /><ClInclude Include="XESM3ResourceRedirector.hpp" /><ClInclude Include="XESM3RuntimeOptions.hpp" /></ItemGroup>
+  <ItemGroup><None Include="packages.config" /><None Include="XESM3.def" /></ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="XESM3Bootstrap.vcxproj">
+      <Project>{0B93FD94-8F2B-46F7-A461-B5D321B8C414}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <BuildReference>true</BuildReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets"><Import Project="packages\Detours.4.0.1\build\native\Detours.targets" Condition="Exists('packages\Detours.4.0.1\build\native\Detours.targets')" /></ImportGroup>
+  <Target Name="EnsureXESM3Dirs" BeforeTargets="PrepareForBuild"><MakeDir Directories="$(IntDir);$(OutDir)" /></Target>
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild"><Error Condition="!Exists('packages\Detours.4.0.1\build\native\Detours.targets')" Text="Missing Detours package." /></Target>
+  <Target Name="VerifyDualDllOutput" AfterTargets="Build">
+    <Error Condition="!Exists('$(OutDir)dbghelp.dll')" Text="xeSM3 dual-build failure: dbghelp.dll was not produced in $(OutDir). Build the xeSM3 solution/project with the bootstrap dependency enabled." />
+    <Error Condition="!Exists('$(OutDir)xeSM3.dll')" Text="xeSM3 dual-build failure: xeSM3.dll was not produced in $(OutDir)." />
+    <Message Importance="high" Text="xeSM3 dual-build PASS: $(OutDir)xeSM3.dll + $(OutDir)dbghelp.dll" />
+  </Target>
+</Project>

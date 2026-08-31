@@ -1,0 +1,27 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{BC8A1FFA-BEE3-4634-8014-F334798102B3}") = "xeSM3", "XESM3.vcxproj", "{7D94CC53-2255-4CB4-B178-A6990BC01010}"
+	ProjectSection(ProjectDependencies) = postProject
+		{0B93FD94-8F2B-46F7-A461-B5D321B8C414} = {0B93FD94-8F2B-46F7-A461-B5D321B8C414}
+	EndProjectSection
+EndProject
+Project("{BC8A1FFA-BEE3-4634-8014-F334798102B3}") = "xeSM3 Bootstrap", "XESM3Bootstrap.vcxproj", "{0B93FD94-8F2B-46F7-A461-B5D321B8C414}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x86 = Debug|x86
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{7D94CC53-2255-4CB4-B178-A6990BC01010}.Debug|x86.ActiveCfg = Debug|Win32
+		{7D94CC53-2255-4CB4-B178-A6990BC01010}.Debug|x86.Build.0 = Debug|Win32
+		{7D94CC53-2255-4CB4-B178-A6990BC01010}.Release|x86.ActiveCfg = Release|Win32
+		{7D94CC53-2255-4CB4-B178-A6990BC01010}.Release|x86.Build.0 = Release|Win32
+		{0B93FD94-8F2B-46F7-A461-B5D321B8C414}.Debug|x86.ActiveCfg = Debug|Win32
+		{0B93FD94-8F2B-46F7-A461-B5D321B8C414}.Debug|x86.Build.0 = Debug|Win32
+		{0B93FD94-8F2B-46F7-A461-B5D321B8C414}.Release|x86.ActiveCfg = Release|Win32
+		{0B93FD94-8F2B-46F7-A461-B5D321B8C414}.Release|x86.Build.0 = Release|Win32
+	EndGlobalSection
+EndGlobal

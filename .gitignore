@@ -1,0 +1,31 @@
+# Visual Studio
+.vs/
+bin/
+obj/
+*.pdb
+*.ilk
+*.user
+*.suo
+Debug/
+Release/
+x64/
+.xesm3_build/
+
+# Generated release output
+RELEASE/
+*.dll
+*.log
+
+# Python / Blender caches
+__pycache__/
+*.pyc
+*.pyo
+
+# Local game files and original archives
+Game.exe
+*.pcpack
+*.pcapk
+
+# Operating-system clutter
+.DS_Store
+Thumbs.db

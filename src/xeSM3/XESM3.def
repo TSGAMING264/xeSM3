@@ -1,0 +1,4 @@
+LIBRARY xeSM3
+EXPORTS
+    XESM3_IsLoaded=_XESM3_IsLoaded@0
+    XESM3_ReloadMods=_XESM3_ReloadMods@0
