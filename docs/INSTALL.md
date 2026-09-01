@@ -1,11 +1,11 @@
 # Installing xeSM3
 
-xeSM3 v0.1.0 is a Windows x86 loose-resource mod loader for the PC version of *Spider-Man 3*.
+xeSM3 v0.1.1 is the INI and packaging hotfix for the Windows x86 xeSM3 v0.1.0 loader for *Spider-Man 3*.
 
 ## What You Need
 
 - An installed copy of the original Spider-Man 3 PC game
-- The tested xeSM3 v0.1.0 release package from [GitHub Releases](https://github.com/TSGAMING264/xeSM3/releases/latest)
+- The tested xeSM3 v0.1.1 release package from [GitHub Releases](https://github.com/TSGAMING264/xeSM3/releases/latest)
 - Permission to copy files into the directory containing `Game.exe`
 
 Do not download random DLL mirrors. Use the release package published by TSGAMING264.
@@ -16,6 +16,8 @@ Do not download random DLL mirrors. Use the release package published by TSGAMIN
 2. Open the folder containing the game's `Game.exe`.
 3. Copy `dbghelp.dll`, `xeSM3.dll`, and the complete `Mods` directory beside `Game.exe`.
 4. Keep the filenames unchanged.
+
+The v0.1.1 ZIP is a drop-in package: these files and folders are at the ZIP root, not inside a second wrapper directory.
 
 The result should be:
 
@@ -51,11 +53,13 @@ Only two values are supported:
 
 Other numeric values are not priorities and are not supported.
 
+Only `Mods\mods.config.ini` is authoritative. A root-level `mods.config.ini` is ignored. If a mod name appears more than once, the last assignment wins.
+
 ## Confirming the Installation
 
 Release builds intentionally do not display xeSM3 startup or success popups. The absence of a popup is expected.
 
-Use an included opt-in example or `TESTMOD`, enable it with `100`, and confirm that its intended resource appears in game. Disable it again with `0` to verify the config entry.
+No example mod is installed or enabled automatically. To test a reference example, copy it deliberately from the source `Examples` directory into a new folder under `Mods`, add that folder name with `100`, and then set it to `0` to verify last-assignment behavior.
 
 ## Compatibility Notes
 
@@ -85,6 +89,7 @@ Do not rename `dbghelp.dll` or `xeSM3.dll`, and do not replace the bootstrap wit
 
 - Confirm the mod directory name exactly matches its entry in `[EnabledMods]`.
 - Confirm the entry is set to `100`.
+- Confirm you edited only `Mods\mods.config.ini`; delete or ignore any stale root-level `mods.config.ini`.
 - Confirm the path includes the correct PACK and APKF scope.
 - Confirm the resource filename and hash are exact.
 - Confirm the resource type is one of MESH, MAT, TEX, ANIM, SKEL, or ASKL.

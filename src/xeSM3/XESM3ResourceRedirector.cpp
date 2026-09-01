@@ -1226,20 +1226,10 @@ namespace
         if (FileExists(configPath))
             return;
 
-        // Stage 2C v4 stored mods.config.ini one directory above Mods.
-        // Migrate that file once so existing enabled-mod settings are preserved.
-        const std::string legacyConfigPath = GetResourcePath("mods.config.ini");
-        if (FileExists(legacyConfigPath) && CopyFileA(legacyConfigPath.c_str(), configPath.c_str(), TRUE) != 0)
-        {
-            char migrateLine[1400]{};
-            sprintf_s(
-                migrateLine,
-                "[Mods] CONFIG-MIGRATED old=%s new=%s",
-                legacyConfigPath.c_str(),
-                configPath.c_str());
-            WriteResourceLogLine(migrateLine);
-            return;
-        }
+        // v0.1.0 INI HOTFIX:
+        // ONLY <Game.exe>\Mods\mods.config.ini is authoritative.
+        // Never migrate/copy a legacy root-level mods.config.ini here.
+        // This prevents stale test/example settings from being resurrected.
 
         FILE* file = nullptr;
         if (fopen_s(&file, configPath.c_str(), "w") != 0 || file == nullptr)
@@ -1247,89 +1237,22 @@ namespace
 
         fputs(
             "; ============================================================\n"
-            "; xeSM3 - Spider-Man 3 PC Loose Resource Mod Loader\n"
+            "; xeSM3 v0.1.0 - INI HOTFIX\n"
             "; Created by TSGAMING264\n"
-            "; Public Release: v0.1.0\n"
             "; ============================================================\n"
             ";\n"
-            "; On game startup, every enabled mod directory listed under\n"
-            "; [EnabledMods] is scanned recursively for loose replacement files.\n"
+            "; ONLY this file is read:\n"
+            ";   <Game.exe>\\Mods\\mods.config.ini\n"
             ";\n"
-            "; xeSM3 uses the original Spider-Man 3 archive structure:\n"
+            "; 0   = Disabled\n"
+            "; 100 = Enabled\n"
             ";\n"
-            ";   Mods\\<Mod Name>\\<PACK>\\<APKF>\\<resource>\n"
-            ";\n"
-            "; Examples:\n"
-            ";\n"
-            ";   Mods\\My Character Mod\\CH_SPIDERMAN\\_O0069.0xCFB154CD.T36.apkf\\0xAC92103D.ch_spiderman000.mesh\n"
-            ";\n"
-            ";   Mods\\My Loading Screen\\SPIDERMANLOGO\\_O0001.0x348E72F4.T36.apkf\\0xDEF62318.i_loading_screen_bkg.tex\n"
-            ";\n"
-            "; Supported loose resource types:\n"
-            ";\n"
-            ";   MESH\n"
-            ";   MAT\n"
-            ";   TEX\n"
-            ";   ANIM\n"
-            ";   SKEL\n"
-            ";   ASKL\n"
-            ";\n"
-            "; Reference catalogs:\n"
-            ";\n"
-            ";   filelist.txt\n"
-            ";   filelist.apkf.txt\n"
-            ";   filelist.apkf.paths.txt\n"
-            ";\n"
-            "; ============================================================\n"
-            "; MOD ENABLE / DISABLE VALUES\n"
-            "; ============================================================\n"
-            ";\n"
-            "; xeSM3 intentionally uses only two values:\n"
-            ";\n"
-            ";   0   = Disabled\n"
-            ";   100 = Enabled\n"
-            ";\n"
-            "; Other numeric priority values are NOT supported.\n"
-            "; The name on the left must exactly match the mod folder under Mods\\.\n"
+            "; LAST assignment wins if a mod name appears more than once.\n"
             ";\n"
             "; Example:\n"
+            ";   My Mod=100\n"
             ";\n"
-            ";   My First Mod=100\n"
-            ";   Disabled Mod=0\n"
-            ";\n"
-            "; ============================================================\n"
-            "; SPECIAL THANKS / CREDITS\n"
-            "; ============================================================\n"
-            ";\n"
-            "; HUGE shoutout to Kirbystealer, the legend behind exWoS.\n"
-            "; exWoS was a massive inspiration for xeSM3 and proved what was\n"
-            "; possible with this style of loose-resource mod loading.\n"
-            "; Without Kirbystealer and exWoS, xeSM3 would not exist.\n"
-            ";\n"
-            "; HUGE shoutout to AkyrosXD for recreating the Spider-Man 3\n"
-            "; Debug Menu. The SM3 Debug Menu became one of the most important\n"
-            "; tools used during the research and reverse-engineering process\n"
-            "; that eventually led to xeSM3.\n"
-            ";\n"
-            "; HUGE shoutout to Josuke777 for making a serious attempt at\n"
-            "; recreating/cloning exWoS for Spider-Man 3 and for sharing notes,\n"
-            "; discoveries, methods, and model-importing research.\n"
-            ";\n"
-            "; HUGE shoutout to Arc for helping throughout xeSM3 testing and\n"
-            "; release QA, including compatibility testing and test planning.\n"
-            ";\n"
-            "; HUGE thanks to tmprogamer for beta testing xeSM3 and helping put\n"
-            "; the loader through real-world testing.\n"
-            "; https://next.nexusmods.com/profile/tmprogamer\n"
-            ";\n"
-            "; HUGE thanks to ArchiverOfTriviality for beta testing xeSM3 and\n"
-            "; helping verify stability, compatibility, and mod-loading behavior.\n"
-            ";\n"
-            "; xeSM3 exists because of years of experimentation, reverse\n"
-            "; engineering, testing, and knowledge shared throughout the\n"
-            "; Spider-Man modding community.\n"
-            ";\n"
-            "; Thank you to everyone who helped make this possible.\n"
+            "; No example/test mod is enabled by default.\n"
             "; ============================================================\n"
             "\n"
             "[Info]\n"
@@ -1340,8 +1263,7 @@ namespace
             "[EnabledMods]\n"
             "\n"
             "; Add installed mod folders below.\n"
-            "; Example:\n"
-            "; My First Mod=100\n",
+            "; My Mod=100\n",
             file);
         fclose(file);
     }
@@ -1349,6 +1271,10 @@ namespace
     bool LoadConfiguredModPackages(const std::string& modsDirectory, std::vector<ModPackageInfo>& packages)
     {
         packages.clear();
+
+        // v0.1.0 INI HOTFIX:
+        // Authoritative config is ONLY <Game.exe>\Mods\mods.config.ini.
+        // No example/test configuration is embedded or auto-enabled.
         EnsureExWosStyleModsConfig(modsDirectory);
 
         const std::string configPath = GetModsConfigPath(modsDirectory);
@@ -1357,12 +1283,30 @@ namespace
             return false;
 
         bool inEnabledMods = false;
+        bool firstLine = true;
         char buffer[2048]{};
         size_t order = 0;
 
         while (fgets(buffer, static_cast<int>(sizeof(buffer)), file) != nullptr)
         {
             std::string line = TrimAscii(buffer);
+
+            // v0.1.0 INI HOTFIX: tolerate a UTF-8 BOM at the start of the file.
+            // Without this, some Windows editors can make [EnabledMods] invisible
+            // to the parser even though the INI looks correct in Notepad.
+            if (firstLine)
+            {
+                firstLine = false;
+                if (line.size() >= 3 &&
+                    static_cast<unsigned char>(line[0]) == 0xEF &&
+                    static_cast<unsigned char>(line[1]) == 0xBB &&
+                    static_cast<unsigned char>(line[2]) == 0xBF)
+                {
+                    line.erase(0, 3);
+                    line = TrimAscii(line);
+                }
+            }
+
             if (line.empty() || line[0] == '#' || line[0] == ';')
                 continue;
 
@@ -1392,7 +1336,20 @@ namespace
             info.enabled = info.validToggleValue && info.toggleValue == 100;
             info.rootLoose = false;
             info.configOrder = order++;
-            packages.push_back(info);
+
+            // v0.1.0 INI HOTFIX: normal INI behavior is LAST assignment wins.
+            auto existing = std::find_if(
+                packages.begin(),
+                packages.end(),
+                [&](const ModPackageInfo& candidate)
+                {
+                    return _stricmp(candidate.name.c_str(), name.c_str()) == 0;
+                });
+
+            if (existing != packages.end())
+                *existing = info;
+            else
+                packages.push_back(info);
         }
 
         fclose(file);

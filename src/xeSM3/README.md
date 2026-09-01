@@ -46,6 +46,8 @@ Do not remove or rename hook calls merely because some historical function names
 
 No generalized numeric priority system should be added.
 
+The v0.1.1 INI hotfix makes only `Mods\mods.config.ini` authoritative, ignores legacy root-level configuration, accepts a UTF-8 BOM before the first section, and uses last-assignment-wins behavior for duplicate mod names.
+
 ## Official examples
 
 The `Examples` folder contains the two release examples:
@@ -54,6 +56,8 @@ The `Examples` folder contains the two release examples:
 2. SPIDERMANLOGO loading-screen TEX example.
 
 They live outside `Mods` so they are not loaded automatically.
+
+`MAKE_RELEASE_PACKAGE.cmd` creates `RELEASE\xeSM3 v0.1.1.zip` with `dbghelp.dll`, `xeSM3.dll`, `Mods`, optional reference-only `Examples`, and `INSTALL.txt` directly at the ZIP root.
 
 ## Codex
 

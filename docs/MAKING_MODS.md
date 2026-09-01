@@ -40,7 +40,7 @@ xeSM3 does not expose a generalized numeric mod-priority system. Values other th
 ## Character MESH Example
 
 ```text
-Mods\TESTMOD\
+Mods\My Character Mod\
 └── CH_SPIDERMAN\
     └── _O0069.0xCFB154CD.T36.apkf\
         ├── 0xAC92103D.ch_spiderman000.mesh
@@ -57,7 +57,7 @@ In this example:
 ## Loading-Screen TEX Example
 
 ```text
-Mods\TESTMOD\
+Mods\My Loading Screen\
 └── SPIDERMANLOGO\
     └── _O0001.0x348E72F4.T36.apkf\
         └── 0xDEF62318.i_loading_screen_bkg.tex
@@ -90,11 +90,9 @@ xeSM3 v0.1.0 supports these routes:
 
 The loose file must still be valid for the game and the target resource. xeSM3 redirects resource loading; it does not automatically repair malformed model, material, texture, animation, or skeleton data.
 
-## Included TESTMOD and Examples
+## Reference Examples
 
-The v0.1.0 release includes `TESTMOD` for opt-in testing. It is not active until its matching config entry is set to `100`.
-
-The source also contains official character MESH and loading-screen TEX examples. Keep examples opt-in rather than moving every example into `Mods` by default.
+The release does not install or enable an example mod. The source contains reference-only character MESH and loading-screen TEX examples under `Examples/`. Copy one into a deliberately named folder under `Mods` and enable that folder only when you intend to test it.
 
 ## Suggested Workflow
 

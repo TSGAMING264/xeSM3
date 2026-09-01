@@ -7,7 +7,7 @@
 
 xeSM3 allows resources in the Windows PC version of *Spider-Man 3* to be replaced with loose files stored inside a `Mods` directory. Mods can replace supported resources without rebuilding the game's original PCPACK archives.
 
-The initial public release is **xeSM3 v0.1.0** for **Spider-Man 3 PC / Windows x86**.
+The initial public release is **xeSM3 v0.1.0** for **Spider-Man 3 PC / Windows x86**. The latest **v0.1.1 INI hotfix** keeps the same frozen resource-loader routes while correcting configuration behavior and release packaging.
 
 ## Features
 
@@ -79,7 +79,7 @@ Mods\<Mod Name>\<PACK>\<APKF>\<resource>
 Character example:
 
 ```text
-Mods\TESTMOD\
+Mods\My Character Mod\
 └── CH_SPIDERMAN\
     └── _O0069.0xCFB154CD.T36.apkf\
         ├── 0xAC92103D.ch_spiderman000.mesh
@@ -89,13 +89,13 @@ Mods\TESTMOD\
 Texture example:
 
 ```text
-Mods\TESTMOD\
+Mods\My Loading Screen\
 └── SPIDERMANLOGO\
     └── _O0001.0x348E72F4.T36.apkf\
         └── 0xDEF62318.i_loading_screen_bkg.tex
 ```
 
-The v0.1.0 release includes `TESTMOD` as an opt-in example. It must still be enabled in `mods.config.ini` before it will load.
+No example mod is installed or enabled automatically. Reference resources remain under `src/xeSM3/Examples/` and must be copied into a deliberately created mod folder before they can load.
 
 See [docs/MAKING_MODS.md](docs/MAKING_MODS.md) for path rules, hashes, catalogs, and example workflows.
 
@@ -141,6 +141,9 @@ These tools are still an evolving part of the project. Read [docs/BLENDER.md](do
 ## Notes
 
 - xeSM3 v0.1.0 targets the Windows x86 release of Spider-Man 3 PC.
+- xeSM3 v0.1.1 fixes INI parsing and drop-in packaging without changing any of the six loose-resource routes.
+- Only `Mods\mods.config.ini` is authoritative; a root-level `mods.config.ini` is ignored.
+- Duplicate mod entries use last-assignment-wins behavior.
 - Public Release builds intentionally compile startup diagnostic popups out.
 - Official examples are opt-in and should only be enabled when the user chooses to test them.
 - The repository contains source and documentation; tested binary packages belong on GitHub Releases.
