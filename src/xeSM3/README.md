@@ -53,7 +53,7 @@ bin\x86\Release\xeSM3.dll
 
 No generalized numeric priority system is used.
 
-`xeSM3.ini` uses the same public toggle convention for PostFX. Keep `PostProcessFix=100`, then enable only one Xbox profile at a time. The Xbox profiles are alternatives and should be switched one at a time.
+`xeSM3.ini` uses the same public toggle convention for PostFX. The Retail Xbox and Debug Xbox PostFX routes are alternative renderer profiles. Enable only one Xbox profile at a time. Keep `PostProcessFix=100` when using either Xbox profile.
 
 Debug Xbox (qualified and recommended):
 
@@ -86,7 +86,7 @@ The proven loader routes remain:
 - SKEL
 - ASKL
 
-Introduced in v0.1.0, WRAP resources can feed those same native processing routes, including names such as:
+xeSM3 v0.1.0 introduces support for standalone WRAP resources. WRAP files are unpacked and normalized in memory before being passed into xeSM3's existing native loose-resource routes, including:
 
 ```text
 0xHASH.name.wrap.mesh

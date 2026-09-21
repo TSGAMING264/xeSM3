@@ -24,8 +24,9 @@ Default final configuration:
   PostProcessRetailXbox=0
   PostProcessDebugXbox=100
 
-Route priority:
-  Debug Xbox > Retail Xbox > PostProcessFix > Retail PC
+The Retail Xbox and Debug Xbox PostFX routes are alternative renderer profiles.
+Enable only one Xbox profile at a time.
+Keep PostProcessFix=100 when using either Xbox profile.
 
 WRAP
 ----

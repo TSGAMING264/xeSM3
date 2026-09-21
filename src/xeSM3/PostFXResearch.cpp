@@ -719,11 +719,16 @@ namespace
         char text[48];
     };
 
+#if !defined(NDEBUG)
+    // Diagnostic/research telemetry only. The public Release build does not
+    // allocate this ~1.7 MiB ring or collect Event records. Production
+    // validation counters and fail-closed renderer state remain separate.
     constexpr uint32_t kEventCapacity = 8192;
     Event s_events[kEventCapacity] = {};
     volatile LONG s_eventWrite = 0;
     volatile LONG s_eventRead = 0;
     volatile LONG s_droppedEvents = 0;
+#endif
 
     HANDLE s_logFile = INVALID_HANDLE_VALUE;
     uint32_t s_presentCount = 0;
@@ -7693,6 +7698,13 @@ uint32_t s_mode4NglDepthSurfaceMatchOffset = 0xFFFFFFFFu;
 
     Event* ReserveEvent(EventType type)
     {
+#if defined(NDEBUG)
+        // Public Release: no research Event allocation/collection. Keep the
+        // queue API fail-closed so production counters/validation can remain
+        // unchanged without paying the telemetry-ring cost.
+        (void)type;
+        return nullptr;
+#else
         if (!AllowPermanentMode4Event(type))
             return nullptr;
 
@@ -7708,6 +7720,7 @@ uint32_t s_mode4NglDepthSurfaceMatchOffset = 0xFFFFFFFFu;
         ZeroMemory(event, sizeof(*event));
         event->type = type;
         return event;
+#endif
     }
 
     void QueueRouteEvent(EventType type, uintptr_t returnAddress, uint32_t source, uint32_t target, int nativeResult)
@@ -14651,11 +14664,9 @@ uint32_t s_mode4NglDepthSurfaceMatchOffset = 0xFFFFFFFFu;
 
     void FlushEvents()
     {
-#if defined(XESM3_PUBLIC_BUILD)
-        // Release keeps counters/validation alive while discarding file-only
-        // telemetry. Drain the ring to prevent long-session event saturation.
-        const LONG write = InterlockedCompareExchange(&s_eventWrite, 0, 0);
-        InterlockedExchange(&s_eventRead, write);
+#if defined(NDEBUG)
+        // Public Release has no research Event ring. Production validation
+        // counters and renderer safety state are maintained independently.
         return;
 #else
         EnsureLogOpen();

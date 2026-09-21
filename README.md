@@ -81,7 +81,7 @@ The name on the left must exactly match the mod directory name inside `Mods`.
 
 ## PostFX Configuration
 
-Keep `PostProcessFix=100`, then enable only one Xbox profile at a time. The Xbox profiles are alternatives and should be switched one at a time.
+The Retail Xbox and Debug Xbox PostFX routes are alternative renderer profiles. Enable only one Xbox profile at a time. Keep `PostProcessFix=100` when using either Xbox profile.
 
 **Debug Xbox (qualified and recommended):**
 
@@ -142,7 +142,9 @@ See [docs/MAKING_MODS.md](docs/MAKING_MODS.md) for path rules, hashes, catalogs,
 
 ## WRAP Resources
 
-Introduced in v0.1.0, xeSM3 accepts standalone Treyarch/WoS-style WRAP resources such as:
+xeSM3 v0.1.0 introduces support for standalone Treyarch/WoS-style WRAP resources. WRAP files are unpacked and normalized in memory before being passed into xeSM3's existing native loose-resource routes.
+
+Supported names include:
 
 ```text
 0xHASH.name.wrap.mesh
@@ -204,22 +206,23 @@ These tools are still an evolving part of the project. Read [docs/BLENDER.md](do
 
 See [CHANGELOG.md](CHANGELOG.md) for the supplied public release history.
 
-## Project Status & Community Help
+## Blender Tools & Community Help
 
-xeSM3 is a major milestone for Spider-Man 3 PC modding, but there is still more work to do.
+The core xeSM3 loader and v0.1.0 renderer work are release-tested, but the Blender side of the project is still an area I would like to improve.
 
-The Blender side of the project is not TSGAMING264's strongest area. A lot of effort was put into getting the Blender tools this far, and community help is strongly welcomed for improving:
+Community contributions are especially welcome for improving:
 
-- Mesh importing and exporting
+- MESH importing and exporting
 - Skeleton workflows
 - Materials
 - Texture workflows
 - Blender compatibility
 - Exporter reliability
+- Usability
 
-This is an invitation to contribute and build on a working foundation—not a warning that the project is unusable.
+This is an invitation to improve the Blender tooling, not a warning that the xeSM3 loader itself is unusable.
 
-> I have a lot of faith in the Spider-Man modding community, and I hope people can continue improving the Blender side while building on the foundation xeSM3 provides.
+> I have a lot of faith in the Spider-Man modding community, and I hope people can continue improving the Blender side and build on the foundation xeSM3 provides.
 
 The v0.1.0 PostFX restoration is included directly in `xeSM3.dll` and uses the tested narrow D3D9 Reset and DrawPrimitive hook pair.
 

@@ -46,7 +46,9 @@ xcopy /E /I /Y "Examples\*" "%OUT%\Examples\" >nul
  echo XBOX POSTFX:
  echo xeSM3.ini controls PostFX. Public values are also 0 or 100 only.
  echo Default: Debug Xbox route enabled.
- echo Route priority: Debug Xbox ^> Retail Xbox ^> PostProcessFix ^> Retail PC.
+ echo Retail Xbox and Debug Xbox are alternative renderer profiles.
+ echo Enable only one Xbox profile at a time.
+ echo Keep PostProcessFix=100 when using either Xbox profile.
  echo.
  echo WRAP:
  echo Standalone .wrap.mesh/.wrap.tex/.wrap.mat/.wrap.anim/.wrap.skel/.wrap.askl inputs are supported through the native loose-resource processing routes.

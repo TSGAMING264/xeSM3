@@ -1,0 +1,47 @@
+xeSM3 v0.1.0 - FINAL RELEASE PERFORMANCE CLEANUP
+================================================
+
+Baseline source ZIP SHA-256:
+63e5d04022d7d3c538f28cfe774018f585031da21cdc5b8435ceba47878e47c1
+
+Scope: release-overhead cleanup only. No renderer tuning or resource-loader redesign.
+
+CHANGES
+-------
+1. dllmain.cpp
+   - AttachNativeAnimRuntimeDiagnosticDetours() is now diagnostic-build only.
+   - AttachRenderMeshProbeDetour() is now diagnostic-build only.
+   - AttachNativeAnimRedirectorDetour() remains active in Release.
+
+2. PostFXResearch.cpp
+   - The 8,192-entry research Event ring is compiled out under NDEBUG.
+   - ReserveEvent() returns nullptr immediately in Release.
+   - FlushEvents() immediately returns in Release.
+   - Production validation counters and fail-closed state remain.
+
+FROZEN / UNCHANGED
+------------------
+- XESM3ResourceRedirector.cpp loader/WRAP implementation
+- MESH / MAT / TEX / ANIM / SKEL / ASKL routes
+- strict 0/100 behavior
+- Debug/Retail Xbox route selection
+- adaptive bloom math
+- RESZ / INTZ depth
+- F18 depth-aware final
+- ImageZoom / camera-motion ZBlur
+- GodRay ownership and stock suppression
+- Reset slot 16 / DrawPrimitive slot 81
+- V10.5.72 device-ready fail-closed Reset lifecycle
+
+WINDOWS TEST
+------------
+1. Run BUILD_FINAL_RELEASE_X86.cmd.
+2. Boot game and enter gameplay.
+3. Test known MESH and ANIM mods plus another loose-resource route.
+4. Keep Debug Xbox PostFX selected.
+5. Swing/play for several minutes and compare FPS/frametime.
+6. Verify bloom, F18, ImageZoom/ZBlur and GodRay still look normal.
+7. Alt+Tab out/in at least five times.
+8. Continue gameplay after return.
+
+PASS: no crash, no visual regression, no mod-loader regression, animation/mesh mods still work, and Alt+Tab remains safe.

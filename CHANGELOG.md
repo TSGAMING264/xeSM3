@@ -20,5 +20,9 @@ Final tested first public release.
 - ImageZoom/camera-motion ZBlur
 - Native GodRay restoration and stock duplicate suppression
 - Alt-Tab/D3D9 Reset crash fix
+- Removed Release mesh-skinning research probe overhead
+- Removed Release NativeANIM diagnostic-hook overhead while retaining the production NativeANIM redirector
+- Removed Release PostFX 8,192-entry research event-ring overhead
+- Retained all production validation, fail-closed safety, resource-loader behavior, and renderer behavior
 - Spider-Man model example
 - Loading-screen TEX example

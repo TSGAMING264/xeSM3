@@ -36,7 +36,7 @@ Both DLLs are required. `dbghelp.dll` is the bootstrap, and it loads `xeSM3.dll`
 
 ## PostFX Configuration
 
-`xeSM3.ini` uses the same strict public toggle values: `0` is disabled and `100` is enabled. Keep `PostProcessFix=100`, then enable only one Xbox profile at a time. The Xbox profiles are alternatives and should be switched one at a time.
+`xeSM3.ini` uses the same strict public toggle values: `0` is disabled and `100` is enabled. The Retail Xbox and Debug Xbox PostFX routes are alternative renderer profiles. Enable only one Xbox profile at a time. Keep `PostProcessFix=100` when using either Xbox profile.
 
 Debug Xbox (qualified and recommended):
 

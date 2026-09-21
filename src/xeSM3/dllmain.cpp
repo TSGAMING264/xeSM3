@@ -95,8 +95,13 @@ static DWORD WINAPI StartXESM3(LPVOID)
     AttachNativeMatRedirectorDetour();
     AttachNativeMeshRedirectorDetour();
     AttachNativeAnimRedirectorDetour();
+#if defined(XESM3_BOOT_DIAGNOSTIC)
+    // Release performance cleanup: these are research-only hot-path probes.
+    // Keep them available in diagnostic builds, but do not install them in
+    // the public Release runtime. The real NativeANIM redirector above stays.
     AttachNativeAnimRuntimeDiagnosticDetours();
     AttachRenderMeshProbeDetour();
+#endif
     AttachNativeSkelRedirectorDetour();
 
     // V10.5.72 PostFX route (V10.5.71-qualified pixels + Reset recovery) compiled directly into xeSM3.dll.

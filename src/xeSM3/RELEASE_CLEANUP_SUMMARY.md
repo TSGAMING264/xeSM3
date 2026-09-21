@@ -24,6 +24,8 @@ PostProcessRetailXbox=0
 PostProcessDebugXbox=100
 ```
 
+The Retail Xbox and Debug Xbox PostFX routes are alternative renderer profiles. Enable only one Xbox profile at a time. Keep `PostProcessFix=100` when using either Xbox profile.
+
 ```ini
 [EnabledMods]
 ; My Mod=100
@@ -41,3 +43,13 @@ Only `0` and `100` are accepted as public toggle values.
 - developer test mods
 - automatic example activation
 - extra dependency folders
+
+## Release performance cleanup
+
+The final source also keeps research-only hot-path instrumentation out of the public Release build:
+
+- `RenderMeshSkinningProbeHook` detour is installed only in diagnostic builds
+- NativeANIM runtime diagnostic detours are installed only in diagnostic builds
+- the 8,192-entry PostFX research event ring is not allocated or populated in `NDEBUG` Release builds
+
+The production NativeANIM redirector, PostFX validation counters/fail-closed state, V10.5.72 Reset slot 16, DrawPrimitive slot 81, WRAP processing, and all proven loose-resource routes remain enabled and unchanged.
