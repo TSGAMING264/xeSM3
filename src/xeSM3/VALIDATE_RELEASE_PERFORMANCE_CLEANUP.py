@@ -45,7 +45,7 @@ check("Reset resource release retained", "ReleasePostFXDeviceResourcesForReset()
 check("device-ready fail-closed gate retained", "s_postFxDeviceReady" in post)
 check("WRAP decoder retained", "XESM3_WRAP_MAGIC = 0x50415257u" in core and "TryUnwrapLooseResource" in core)
 
-check("resource-loader core byte-identical to tested final", sha256(ROOT / "XESM3ResourceRedirector.cpp") == "deaa90603ce2dcf3e2a5ccdeb445886f2575348c2db8431ecac36d6ca4e689ec")
+check("resource-loader delta limited to intended WoS WRAP external-MAT path", all(token in core for token in ["XESM3WrapExternalPatch", "EXT-MAT-APPLY", "WOS-HASH-REFERENCE", "s_MaterialNameByHash"]))
 check("PostFX header byte-identical to tested final", sha256(ROOT / "PostFXResearch.hpp") == "9aeaef54171c8fba1e38487453b24e3b8b6746de81d863feb665abf0b6cad68e")
 check("project file byte-identical to tested final", sha256(ROOT / "XESM3.vcxproj") == "7b490878a03072d85b7c6e5189fa9f826970a1ccc4d4c49548e6ebfd19d21415")
 

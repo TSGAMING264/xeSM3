@@ -2,9 +2,13 @@ PASS: WRAP magic detector exists
 PASS: WRAP decoder is fail-closed
 PASS: internal pointers normalized to flat offsets
 PASS: external/global tables are validated
+PASS: external patches normalize TYPE+HASH+flat target metadata
+PASS: WoS-style external MAT hashes reach NativeMESH
+PASS: external MAT resolution uses master catalog names
 PASS: native loose reads route through WRAP-aware reader
 PASS: .wrap is removed before resource hashing
 PASS: synthetic WRAP magic/layout parses
+PASS: synthetic external MAT patch captures hash and flat target
 PASS: PHYS separator is not copied into flattened native resource
 PASS: cross-component internal pointer becomes flat local offset
 PASS: external serialized target token is preserved

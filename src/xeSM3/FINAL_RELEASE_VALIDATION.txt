@@ -22,6 +22,8 @@ PASS: public PostFX persistent log disabled
 PASS: WRAP magic support present
 PASS: WRAP decoder present
 PASS: WRAP internal pointer normalization present
+PASS: WRAP external MAT metadata captured
+PASS: WRAP external MAT resolved by SM3 hash
 PASS: WRAP identity strips .wrap before fallback hashing
 PASS: WRAP loose paths feed native adapters
 PASS: WRAP docs use exWoS-style filename

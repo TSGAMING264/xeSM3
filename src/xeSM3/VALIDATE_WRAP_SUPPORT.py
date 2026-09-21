@@ -156,6 +156,16 @@ def unwrap_like_release(data):
     if not valid_table(global_table, global_count, 16):
         raise ValueError("global patch table")
 
+    external = []
+    for i in range(ext_count):
+        entry = ext_table + i * 16
+        resource_type = u32(data, entry + 0)
+        resource_hash = u32(data, entry + 4)
+        expected_index = u32(data, entry + 8)
+        target = resolve_rel(data, entry + 12)
+        target_flat = map_flat(target, 4)
+        external.append((resource_type, resource_hash, expected_index, target_flat))
+
     for i in range(int_count):
         patch_entry = int_table + i * 4
         target = resolve_rel(data, patch_entry)
@@ -164,21 +174,25 @@ def unwrap_like_release(data):
         reference_flat = map_flat(reference, 1)
         struct.pack_into("<I", flat, target_flat, reference_flat)
 
-    return bytes(flat), (ext_count, int_count, global_count)
+    return bytes(flat), (ext_count, int_count, global_count), external
 
 
 # Source-level checks for the exact release implementation.
 check("WRAP magic detector exists", "XESM3_WRAP_MAGIC = 0x50415257u" in CORE)
 check("WRAP decoder is fail-closed", "WRAP decode failed:" in CORE and "TryUnwrapLooseResource" in CORE)
 check("internal pointers normalized to flat offsets", "const uint32_t localOffset = static_cast<uint32_t>(referenceFlatOffset);" in CORE)
-check("external/global tables are validated", "External/global entries are retained in serialized form" in CORE)
+check("external/global tables are validated", "WRAP patch array is outside file" in CORE)
+check("external patches normalize TYPE+HASH+flat target metadata", "XESM3WrapExternalPatch" in CORE and "targetFlatOffset" in CORE)
+check("WoS-style external MAT hashes reach NativeMESH", "EXT-MAT-APPLY" in CORE and "WOS-HASH-REFERENCE" in CORE)
+check("external MAT resolution uses master catalog names", "s_MaterialNameByHash" in CORE and "TryGetCatalogResourceName" in CORE)
 check("native loose reads route through WRAP-aware reader", CORE.count("ReadLooseResourceFile(") >= 7)
 check(".wrap is removed before resource hashing", "Normalize it before explicit-hash parsing and fallback hashing" in CORE)
 
 # Functional synthetic WRAP test.
 synthetic = make_synthetic_wrap()
-flat, counts = unwrap_like_release(synthetic)
+flat, counts, external = unwrap_like_release(synthetic)
 check("synthetic WRAP magic/layout parses", synthetic[:4] == b"WRAP" and counts == (1, 1, 1))
+check("synthetic external MAT patch captures hash and flat target", external == [(0x0054414D, 0x2BB8A7BB, 0xFFFFFFFF, 8)])
 check("PHYS separator is not copied into flattened native resource", len(flat) == 24 and flat[16:24] == b"ABCDEFGH")
 check("cross-component internal pointer becomes flat local offset", u32(flat, 4) == 19)
 check("external serialized target token is preserved", u32(flat, 8) == 0x04001234)

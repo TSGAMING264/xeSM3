@@ -475,6 +475,11 @@ namespace
     std::unordered_map<NativeApkfOverlayKey, NativeApkfOverlayCandidate, NativeApkfOverlayKeyHash> s_NativeApkfOverlayCandidates;
     std::unordered_set<NativeApkfOverlayKey, NativeApkfOverlayKeyHash> s_NativeApkfOverlayCandidateLogged;
     std::unordered_map<uint64_t, std::vector<ArchiveIdentity>> s_ArchiveCatalogByResource;
+    // WoS-style WRAP external-reference support: the master APKF catalog already
+    // carries the canonical resource name for each TYPE+HASH pair. Keep a small
+    // lookup so NativeMESH can ask SM3's own resolver for a MAT by hash without
+    // inventing a mismatched name string.
+    std::unordered_map<uint32_t, std::string> s_MaterialNameByHash;
     std::unordered_map<void*, std::vector<ArchiveIdentity>> s_RuntimeContextCandidates;
     std::unordered_map<void*, ArchiveIdentity> s_RuntimeContextResolved;
     std::unordered_set<uint32_t> s_NativeTexFailureLogged;
@@ -1684,6 +1689,15 @@ namespace
             }
 
             const uint64_t key = MakeLooseResourceKey(catalogResourceType, resourceHash);
+            // WoS-style external references currently need name lookup only for MAT.
+            // Keep this cache MAT-only so the 294k-line master catalog does not become
+            // a second all-resource name database in memory.
+            if (catalogResourceType == SM3_RESOURCE_TYPE_MAT &&
+                fields.size() > 7 && !fields[7].empty() &&
+                s_MaterialNameByHash.find(resourceHash) == s_MaterialNameByHash.end())
+            {
+                s_MaterialNameByHash.emplace(resourceHash, fields[7]);
+            }
             std::vector<ArchiveIdentity>& candidates = s_ArchiveCatalogByResource[key];
             if (!CatalogVectorContains(candidates, identity))
             {
@@ -2377,11 +2391,11 @@ namespace
     // WebOfShadowsTools/exWoS standalone resources use a small WRAP container:
     //   "WRAP" + archive hash + component table + patch table + components.
     // The internal patch list stores pointer values relative to the pointer field.
-    // xeSM3's proven native adapters consume a flat local-offset representation,
-    // so normalize WRAP components into one contiguous buffer and translate ONLY
-    // internal pointer fixups to flat offsets. External/global resource-reference
-    // tokens stay untouched and are resolved by the existing strict stock/runtime
-    // ownership paths. No PCPACK/APKF bytes are rewritten.
+    // xeSM3's proven native adapters consume a flat local-offset representation.
+    // Internal WRAP pointers become flat offsets. External entries are preserved
+    // as TYPE+HASH+target metadata so NativeMESH can resolve WoS-style MAT hashes
+    // through SM3's own resource resolver at the safe pre-handler point. Other
+    // external/global ownership remains stock-preserved. No archives are rewritten.
     constexpr uint32_t XESM3_WRAP_MAGIC = 0x50415257u; // "WRAP" little-endian
     constexpr size_t XESM3_WRAP_MAX_COMPONENTS = 16u;
     constexpr size_t XESM3_WRAP_MAX_PATCHES = 1u << 20;
@@ -2392,6 +2406,14 @@ namespace
         size_t wrapperOffset = 0;
         size_t size = 0;
         size_t flatOffset = 0;
+    };
+
+    struct XESM3WrapExternalPatch
+    {
+        uint32_t resourceType = 0;
+        uint32_t resourceHash = 0;
+        uint32_t expectedIndex = 0;
+        size_t targetFlatOffset = 0;
     };
 
     bool TryReadWrapU32(const std::vector<uint8_t>& bytes, size_t offset, uint32_t& value)
@@ -2452,10 +2474,13 @@ namespace
     bool TryUnwrapLooseResource(
         const std::vector<uint8_t>& wrapped,
         std::vector<uint8_t>& flat,
-        std::string& error)
+        std::string& error,
+        std::vector<XESM3WrapExternalPatch>* externalPatches = nullptr)
     {
         flat.clear();
         error.clear();
+        if (externalPatches != nullptr)
+            externalPatches->clear();
 
         uint32_t magic = 0;
         if (!TryReadWrapU32(wrapped, 0x00u, magic) || magic != XESM3_WRAP_MAGIC)
@@ -2585,8 +2610,11 @@ namespace
             return offset <= wrapped.size() && size64 <= wrapped.size() - offset;
         };
 
-        // External/global entries are retained in serialized form. Validate their
-        // tables so malformed WRAP inputs fail closed rather than reaching adapters.
+        // External/global arrays are validated here. External entries are also
+        // normalized into TYPE+HASH+flat-target metadata for native adapters.
+        // The flattened bytes themselves stay untouched: NativeMESH applies MAT
+        // references through SM3's stock resource resolver at the safe pre-handler
+        // point, while NAME/SKEL/global ownership remains stock-preserved.
         if (!tableRangeValid(externalTableOffset, externalCount, 16u) ||
             !tableRangeValid(internalTableOffset, internalCount, 4u) ||
             !tableRangeValid(globalTableOffset, globalCount, 16u))
@@ -2594,6 +2622,49 @@ namespace
             error = "WRAP patch array is outside file";
             flat.clear();
             return false;
+        }
+
+        for (uint32_t i = 0; i < externalCount; ++i)
+        {
+            const size_t entryOffset = externalTableOffset + static_cast<size_t>(i) * 16u;
+            uint32_t resourceType = 0;
+            uint32_t resourceHash = 0;
+            uint32_t expectedIndex = 0;
+            if (!TryReadWrapU32(wrapped, entryOffset + 0x00u, resourceType) ||
+                !TryReadWrapU32(wrapped, entryOffset + 0x04u, resourceHash) ||
+                !TryReadWrapU32(wrapped, entryOffset + 0x08u, expectedIndex))
+            {
+                error = "WRAP external patch entry is truncated";
+                flat.clear();
+                return false;
+            }
+
+            size_t targetWrapperOffset = 0;
+            if (!TryResolveWrapRelativePointer(wrapped, entryOffset + 0x0Cu, targetWrapperOffset))
+            {
+                error = "WRAP external patch target is invalid";
+                flat.clear();
+                return false;
+            }
+
+            size_t targetFlatOffset = 0;
+            if (!TryMapWrapOffsetToFlat(
+                    components, targetWrapperOffset, sizeof(uint32_t), targetFlatOffset))
+            {
+                error = "WRAP external patch target is outside components";
+                flat.clear();
+                return false;
+            }
+
+            if (externalPatches != nullptr)
+            {
+                XESM3WrapExternalPatch patch{};
+                patch.resourceType = resourceType;
+                patch.resourceHash = resourceHash;
+                patch.expectedIndex = expectedIndex;
+                patch.targetFlatOffset = targetFlatOffset;
+                externalPatches->push_back(patch);
+            }
         }
 
         for (uint32_t i = 0; i < internalCount; ++i)
@@ -2663,8 +2734,12 @@ namespace
     bool ReadLooseResourceFile(
         const std::string& path,
         std::vector<uint8_t>& bytes,
-        std::string& error)
+        std::string& error,
+        std::vector<XESM3WrapExternalPatch>* externalPatches = nullptr)
     {
+        if (externalPatches != nullptr)
+            externalPatches->clear();
+
         std::vector<uint8_t> raw;
         if (!ReadWholeFile(path, raw, error))
             return false;
@@ -2678,7 +2753,7 @@ namespace
 
         std::vector<uint8_t> flat;
         std::string wrapError;
-        if (!TryUnwrapLooseResource(raw, flat, wrapError))
+        if (!TryUnwrapLooseResource(raw, flat, wrapError, externalPatches))
         {
             error = std::string("WRAP decode failed: ") + wrapError;
             return false;
@@ -8099,12 +8174,162 @@ namespace
         }
     }
 
+    bool TryGetCatalogResourceName(
+        uint32_t resourceType,
+        uint32_t resourceHash,
+        std::string& resourceName)
+    {
+        resourceName.clear();
+        if (resourceType != SM3_RESOURCE_TYPE_MAT)
+            return false;
+        std::lock_guard<std::mutex> lock(s_ResourceLogMutex);
+        const auto it = s_MaterialNameByHash.find(resourceHash);
+        if (it == s_MaterialNameByHash.end() || it->second.empty())
+            return false;
+        resourceName = it->second;
+        return true;
+    }
+
+    const XESM3WrapExternalPatch* FindWrapExternalPatch(
+        const std::vector<XESM3WrapExternalPatch>* patches,
+        size_t targetFlatOffset,
+        uint32_t resourceType)
+    {
+        if (patches == nullptr)
+            return nullptr;
+
+        for (const XESM3WrapExternalPatch& patch : *patches)
+        {
+            if (patch.targetFlatOffset == targetFlatOffset &&
+                patch.resourceType == resourceType)
+            {
+                return &patch;
+            }
+        }
+        return nullptr;
+    }
+
+    void* ResolveWrapExternalResourcePointer(
+        uint32_t resourceType,
+        uint32_t resourceHash,
+        std::string& resourceName,
+        std::string& error)
+    {
+        resourceName.clear();
+        error.clear();
+        if (resourceType == 0 || resourceHash == 0)
+        {
+            error = "WRAP external reference has zero TYPE/HASH";
+            return nullptr;
+        }
+
+        if (!TryGetCatalogResourceName(resourceType, resourceHash, resourceName))
+        {
+            char buffer[256]{};
+            sprintf_s(
+                buffer,
+                "no master-catalog resource name for WRAP external %s(%08X) hash=%08X",
+                ResourceTypeName(resourceType),
+                resourceType,
+                resourceHash);
+            error = buffer;
+            return nullptr;
+        }
+
+        SM3ResourceResolverFn resolver = s_OriginalResourceResolver;
+        if (resolver == nullptr)
+            resolver = reinterpret_cast<SM3ResourceResolverFn>(SM3_GAME_RESOURCE_RESOLVER);
+
+        // Match xeSM3's already-proven NativeMAT reference path: call the
+        // stock resolver directly. Do not add a new SEH frame here; MSVC x86
+        // can reject __try in functions that participate in C++ unwinding
+        // (C2712), and the baseline resolver path already works without it.
+        SM3ResourceName targetName{ resourceName.c_str(), resourceHash };
+        void* resolved = resolver(&targetName, resourceType);
+
+        if (resolved == nullptr)
+        {
+            char buffer[320]{};
+            sprintf_s(
+                buffer,
+                "game resolver returned null for WRAP external %s(%08X) hash=%08X name=%s",
+                ResourceTypeName(resourceType),
+                resourceType,
+                resourceHash,
+                resourceName.c_str());
+            error = buffer;
+        }
+        return resolved;
+    }
+
+    void* ResolveWrapExternalMaterialForMeshSection(
+        uint32_t runtimeHash,
+        uint32_t looseSectionIndex,
+        size_t materialFieldFlatOffset,
+        const XESM3WrapExternalPatch& externalMat)
+    {
+        // Keep all STL/RAII state out of ResolveChSpidermanPlayerMaterialPointer().
+        // That baseline function contains an MSVC SEH (__try/__except) guard, so
+        // introducing std::string locals there triggers C2712. This helper contains
+        // no SEH and can safely own the strings needed for catalog lookup/logging.
+        std::string resourceName;
+        std::string resolveError;
+        void* resolved = ResolveWrapExternalResourcePointer(
+            SM3_RESOURCE_TYPE_MAT,
+            externalMat.resourceHash,
+            resourceName,
+            resolveError);
+        if (resolved == nullptr)
+        {
+            char rejectLine[1800]{};
+            sprintf_s(
+                rejectLine,
+                "[WRAP] EXT-MAT-REJECT meshHash=%08X section=%u targetFlat=0x%X matHash=%08X expectedIndex=%08X reason=%s",
+                runtimeHash,
+                looseSectionIndex,
+                static_cast<unsigned int>(materialFieldFlatOffset),
+                externalMat.resourceHash,
+                externalMat.expectedIndex,
+                resolveError.c_str());
+            WriteResourceLogLine(rejectLine);
+            return nullptr;
+        }
+
+        char applyLine[1800]{};
+        sprintf_s(
+            applyLine,
+            "[WRAP] EXT-MAT-APPLY meshHash=%08X section=%u targetFlat=0x%X matHash=%08X matName=%s expectedIndex=%08X runtimeMat=%p mode=WOS-HASH-REFERENCE",
+            runtimeHash,
+            looseSectionIndex,
+            static_cast<unsigned int>(materialFieldFlatOffset),
+            externalMat.resourceHash,
+            resourceName.c_str(),
+            externalMat.expectedIndex,
+            resolved);
+        WriteResourceLogLine(applyLine);
+        return resolved;
+    }
+
     void* ResolveChSpidermanPlayerMaterialPointer(
         uint8_t* stockRuntimeMesh,
         uint32_t runtimeHash,
         uint32_t serializedMaterialRef,
-        uint32_t looseSectionIndex)
+        uint32_t looseSectionIndex,
+        const std::vector<XESM3WrapExternalPatch>* wrapExternalPatches,
+        size_t materialFieldFlatOffset)
     {
+        const XESM3WrapExternalPatch* externalMat = FindWrapExternalPatch(
+            wrapExternalPatches,
+            materialFieldFlatOffset,
+            SM3_RESOURCE_TYPE_MAT);
+        if (externalMat != nullptr)
+        {
+            return ResolveWrapExternalMaterialForMeshSection(
+                runtimeHash,
+                looseSectionIndex,
+                materialFieldFlatOffset,
+                *externalMat);
+        }
         // v6.9 controlled CH_SPIDERMAN player mapping verified from the ORIGINAL 000/001 MESH resources.
         //
         // 000 stock serialized refs:
@@ -8245,6 +8470,7 @@ namespace
         uint8_t* stockRuntimeMesh,
         uint32_t runtimeHash,
         const std::vector<uint8_t>& bytes,
+        const std::vector<XESM3WrapExternalPatch>* wrapExternalPatches,
         NativeMeshPreparedLayout& prepared,
         std::string& error)
     {
@@ -8346,9 +8572,11 @@ namespace
                 stockRuntimeMesh,
                 runtimeHash,
                 serializedMaterialRef,
-                i);
+                i,
+                wrapExternalPatches,
+                static_cast<size_t>(infoOffset) + 0x20u);
             if (material == nullptr)
-                return fail("could not resolve runtime material pointer from stock MESH template");
+                return fail("could not resolve runtime material pointer from WRAP external MAT or stock MESH template");
             *reinterpret_cast<void**>(info + 0x20) = material;
 
             uint32_t paletteOffset = *reinterpret_cast<uint32_t*>(info + 0x24);
@@ -8413,6 +8641,7 @@ namespace
         uint8_t* stockRuntimeMesh,
         uint32_t runtimeHash,
         const std::vector<uint8_t>& bytes,
+        const std::vector<XESM3WrapExternalPatch>* wrapExternalPatches,
         NativeMeshPreparedLayout& prepared,
         std::string& error)
     {
@@ -8685,9 +8914,11 @@ namespace
                 stockRuntimeMesh,
                 runtimeHash,
                 serializedMaterialRef,
-                i);
+                i,
+                wrapExternalPatches,
+                desc.infoOffset + 0x20u);
             if (material == nullptr)
-                return fail("could not resolve runtime material pointer from stock MESH template");
+                return fail("could not resolve runtime material pointer from WRAP external MAT or stock MESH template");
 
             *reinterpret_cast<void**>(info + 0x20) = material;
             *reinterpret_cast<uint8_t**>(info + 0x24) =
@@ -8743,6 +8974,7 @@ namespace
         uint8_t* stockRuntimeMesh,
         uint32_t runtimeHash,
         const std::vector<uint8_t>& bytes,
+        const std::vector<XESM3WrapExternalPatch>* wrapExternalPatches,
         NativeMeshPreparedLayout& prepared,
         std::string& formatMode,
         std::string& error)
@@ -8755,6 +8987,7 @@ namespace
                 stockRuntimeMesh,
                 runtimeHash,
                 bytes,
+                wrapExternalPatches,
                 prepared,
                 localError))
         {
@@ -8767,6 +9000,7 @@ namespace
                 stockRuntimeMesh,
                 runtimeHash,
                 bytes,
+                wrapExternalPatches,
                 prepared,
                 serializedError))
         {
@@ -11273,8 +11507,13 @@ namespace
         }
 
         std::vector<uint8_t> looseBytes;
+        std::vector<XESM3WrapExternalPatch> wrapExternalPatches;
         std::string error;
-        if (!ReadLooseResourceFile(looseEntry.path, looseBytes, error))
+        if (!ReadLooseResourceFile(
+                looseEntry.path,
+                looseBytes,
+                error,
+                &wrapExternalPatches))
         {
             LogNativeMeshFailureOnce(hash, runtimeName, looseEntry.path, error);
             original(context, resourceRecord, componentPointers);
@@ -11287,6 +11526,7 @@ namespace
                 runtimeMesh,
                 hash,
                 looseBytes,
+                &wrapExternalPatches,
                 prepared,
                 nativeMeshFormatMode,
                 error))
@@ -11635,7 +11875,7 @@ namespace
         char line[2500]{};
         sprintf_s(
             line,
-            "[NativeMESH] APPLY-FULL-LAYOUT hash=%08X name=%s runtimeMesh=%p stockSections=%u -> looseSections=%u verts=%u indices=%u bytes=%u sourceHash=%08X hashMatch=EXACT inputFormat=%s pointerMode=FIXED-IN-MEMORY identity=PRESERVE-STOCK-MESH-POINTER materialMode=CH_SPIDERMAN000+001-ORIGINAL-MAP reinit=%s selection=%s generation=%u mod=%s toggle=%d pack=%s archive=%s file=%s",
+            "[NativeMESH] APPLY-FULL-LAYOUT hash=%08X name=%s runtimeMesh=%p stockSections=%u -> looseSections=%u verts=%u indices=%u bytes=%u sourceHash=%08X hashMatch=EXACT inputFormat=%s pointerMode=FIXED-IN-MEMORY identity=PRESERVE-STOCK-MESH-POINTER materialMode=WOS-EXT-MAT-HASH|CH_SPIDERMAN000+001-LEGACY-MAP reinit=%s selection=%s generation=%u mod=%s toggle=%d pack=%s archive=%s file=%s",
             hash,
             runtimeName[0] != '\0' ? runtimeName : "<unknown>",
             runtimeMesh,
@@ -16933,7 +17173,7 @@ void InitResourceRedirector()
         char meshLine[1300]{};
         sprintf_s(
             meshLine,
-            "[NativeMESH] v7.6 hook=%s target=%08X timing=PRE-NGL-RUNTIME-BUFFER-INIT format=DUAL[EXPERIMENTAL-LOCAL-OFFSETS|STOCK-SERIALIZED-SEQUENTIAL+COMPONENT-PHYS-REDIRECT] identity=PRESERVE-STOCK-TOPLEVEL-MESH lateReinit=REAPPLY-SAME-VERIFIED-OWNER materialMap=CH_SPIDERMAN000+001-ORIGINAL playerProbe=ON gpuSourceProvenance=PRE-008D04F0 gpuReadback=POST-008D04F0-D3D9-READONLY playerHashIdentity=EXACT masterCatalog=Mods\\filelist.apkf.txt ownership=STRICT-PACK+APKF+TYPE+HASH stickyFallback=SAME-MESH+CONTEXT+HASH globalFallback=OFF",
+            "[NativeMESH] v7.6 hook=%s target=%08X timing=PRE-NGL-RUNTIME-BUFFER-INIT format=DUAL[EXPERIMENTAL-LOCAL-OFFSETS|STOCK-SERIALIZED-SEQUENTIAL+COMPONENT-PHYS-REDIRECT] identity=PRESERVE-STOCK-TOPLEVEL-MESH lateReinit=REAPPLY-SAME-VERIFIED-OWNER materialMap=CH_SPIDERMAN000+001-ORIGINAL+WOS-WRAP-EXT-MAT-HASH playerProbe=ON gpuSourceProvenance=PRE-008D04F0 gpuReadback=POST-008D04F0-D3D9-READONLY playerHashIdentity=EXACT masterCatalog=Mods\\filelist.apkf.txt ownership=STRICT-PACK+APKF+TYPE+HASH stickyFallback=SAME-MESH+CONTEXT+HASH globalFallback=OFF",
             s_NativeMeshDetourAttached ? "ATTACHED" : (s_NativeMeshDetourAttachFailed ? "FAILED" : "PENDING"),
             static_cast<unsigned int>(SM3_MESH_RESOURCE_HANDLER));
         WriteResourceLogLine(meshLine);
@@ -17046,6 +17286,7 @@ void ReloadMods()
     s_NativeApkfOverlayCandidates.clear();
     s_NativeApkfOverlayCandidateLogged.clear();
     s_ArchiveCatalogByResource.clear();
+    s_MaterialNameByHash.clear();
     s_RuntimeContextCandidates.clear();
     s_RuntimeContextResolved.clear();
     s_NativeTexFailureLogged.clear();

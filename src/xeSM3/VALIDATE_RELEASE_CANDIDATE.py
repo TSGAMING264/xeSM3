@@ -50,8 +50,10 @@ check("public PostFX persistent log disabled", "Public xeSM3 keeps the proven Po
 check("WRAP magic support present", "XESM3_WRAP_MAGIC = 0x50415257u" in core)
 check("WRAP decoder present", "TryUnwrapLooseResource" in core and "ReadLooseResourceFile" in core)
 check("WRAP internal pointer normalization present", "WRAP internal pointer" in core and "referenceFlatOffset" in core)
+check("WRAP external MAT metadata captured", "XESM3WrapExternalPatch" in core and "targetFlatOffset" in core)
+check("WRAP external MAT resolved by SM3 hash", "EXT-MAT-APPLY" in core and "WOS-HASH-REFERENCE" in core)
 check("WRAP identity strips .wrap before fallback hashing", "Normalize it before explicit-hash parsing and fallback hashing" in core)
-check("WRAP loose paths feed native adapters", core.count("ReadLooseResourceFile(looseEntry.path") >= 5)
+check("WRAP loose paths feed native adapters", core.count("ReadLooseResourceFile(") >= 7)
 check("WRAP docs use exWoS-style filename", ".wrap.mesh" in config)
 check("self-contained WRAP validator present", (ROOT / "VALIDATE_WRAP_SUPPORT.py").is_file())
 

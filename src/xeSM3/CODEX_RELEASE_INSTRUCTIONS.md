@@ -31,3 +31,6 @@ Do not ship source files, PDBs, research logs, debug reports, or development-onl
 Use `BUILD_FINAL_RELEASE_X86.cmd`.
 
 The public version remains `v0.1.0`. Internal PostFX milestone numbers are not public version numbers.
+
+## WoS external-MAT test branch guard
+Before building this test branch, run `VALIDATE_C2712_NO_NEW_SEH.py`. The WoS MAT feature must add no new `__try/__except` blocks beyond the proven baseline.

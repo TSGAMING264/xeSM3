@@ -10,6 +10,8 @@ Final tested first public release.
 - ASKL replacement
 - Standalone WRAP input support with fail-closed validation
 - Internal WRAP pointer/fixup normalization and external/global token preservation
+- Web of Shadows-style WRAP external-MAT resolution for NativeMESH exports
+- Existing serialized-material fallback retained for raw and older WRAP MESH mods
 - Scoped PCPACK/APKF resource replacement
 - Multiple mod package support
 - `0` / `100` config system

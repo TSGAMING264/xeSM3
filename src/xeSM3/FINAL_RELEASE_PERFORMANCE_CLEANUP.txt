@@ -45,3 +45,8 @@ WINDOWS TEST
 8. Continue gameplay after return.
 
 PASS: no crash, no visual regression, no mod-loader regression, animation/mesh mods still work, and Alt+Tab remains safe.
+
+TEST-BRANCH NOTE - 2026-09-21
+------------------------------
+The original performance-cleanup baseline above remains the provenance base.
+This WOS_WRAP_EXTMAT_TEST source intentionally changes XESM3ResourceRedirector.cpp only in the WRAP/NativeMESH material-reference path so Blender-generated WoS-style external MAT hashes can be resolved through SM3's stock resource resolver. PostFXResearch.cpp/.hpp and XESM3.vcxproj remain byte-identical to the tested final baseline.
