@@ -1,0 +1,2 @@
+# Preserve the authoritative tested xeSM3 source bytes and manifest hashes.
+src/xeSM3/** -text

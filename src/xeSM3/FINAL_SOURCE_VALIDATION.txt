@@ -1,0 +1,37 @@
+PASS: package references dbghelp.dll
+PASS: package references xeSM3.dll
+PASS: package references xeSM3.ini
+PASS: package references Mods\mods.config.ini
+PASS: package references Mods\filelist.txt
+PASS: package references Mods\filelist.apkf.txt
+PASS: package references Mods\filelist.apkf.paths.txt
+PASS: package references Examples\*
+PASS: package references INSTALL.txt
+PASS: runtime package does not copy source cpp
+PASS: runtime package does not copy headers
+PASS: runtime package does not copy PDB
+PASS: runtime package does not copy research logs
+PASS: mod INI documents 0/100
+PASS: mod parser strict 0/100
+PASS: PostFX INI documents 0/100
+PASS: Debug Xbox default enabled
+PASS: Retail Xbox default disabled
+PASS: PostFX parser strict 100
+PASS: WRAP magic present
+PASS: WRAP decoder present
+PASS: WRAP-aware loose reader present
+PASS: WRAP hash normalization present
+PASS: Reset vtable slot 16 present
+PASS: DrawPrimitive slot 81 present
+PASS: Reset hook present
+PASS: Reset releases xeSM3 resources first
+PASS: device-ready gate present
+PASS: failed/lost device falls through to stock draw
+PASS: narrow production hook pair documented
+PASS: final builder targets x86 Release
+PASS: final builder calls public packager
+PASS: final builder creates final ZIP
+PASS: final builder writes SHA-256
+PASS: public version remains v0.1.0
+
+FINAL SOURCE VALIDATION PASS

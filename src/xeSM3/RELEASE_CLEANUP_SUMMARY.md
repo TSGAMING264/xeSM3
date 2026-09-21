@@ -1,32 +1,43 @@
-# xeSM3 v0.1.0 — Release Cleanup Summary
+# xeSM3 v0.1.0 — Final Release Summary
 
-This release-candidate copy was prepared from the proven v0.1.6.1 source baseline.
+The final package keeps the original public v0.1.0 shape and updates the internals only where required.
 
-## Changes intentionally made
+## Included
 
-- Public branding changed to **xeSM3 v0.1.0**.
-- Added safe source comments: **Created by TSGAMING264**.
-- Public payload output name changed to `xeSM3.dll`; bootstrap remains `dbghelp.dll`.
-- `DbgHelpProxy.cpp` now loads `xeSM3.dll` beside itself.
-- Removed `XESM3_BOOT_DIAGNOSTIC` from **Release** project definitions only, so public Release startup MessageBox diagnostics are compiled out.
-- Debug builds retain diagnostics for troubleshooting.
-- Removed bundled developer mesh-test folders/scripts from the release-candidate copy.
-- Replaced the shipped `Mods\mods.config.ini` with the final public 0/100 configuration and credits.
-- Updated only the default-config **text block** in `XESM3ResourceRedirector.cpp`; resource-loader algorithms were not changed.
-- Added official MESH and TEX examples outside `Mods` so they are opt-in.
-- Updated x86 build/release scripts for the public filename/version.
-- Added `CODEX_RELEASE_INSTRUCTIONS.md`, `VALIDATE_RELEASE_CANDIDATE.py`, and `FINAL_SMOKE_TEST.md`.
+- `dbghelp.dll` bootstrap
+- `xeSM3.dll` payload
+- `xeSM3.ini` for PostFX route selection
+- `Mods\mods.config.ini` with strict `0/100` enable values
+- three loader catalogs
+- official examples outside `Mods`
+- native loose MESH/MAT/TEX/ANIM/SKEL/ASKL support
+- WRAP decode/flatten/fixup path feeding the proven native adapters
+- Debug/Retail Xbox PostFX route selection
+- V10.5.72 D3D9 Reset/Alt-Tab recovery
 
-## Frozen behavior not changed
+## Public defaults
 
-- MESH / MAT / TEX / ANIM / SKEL / ASKL routes
-- Hook addresses / offsets / hashes
-- Detour attach sequence
-- PACK + APKF strict resource scoping
-- Shadow resource behavior / ownership / lifetime
-- Game.exe compatibility gate
-- `dbghelp.dll` proxy architecture
-- 0/100 mod-toggle parser behavior
-- RaimiHook independence / `d3d9.dll` independence
+```ini
+[PostProcessing]
+PostProcessFix=100
+PostProcessRetailXbox=0
+PostProcessDebugXbox=100
+```
 
-Do not perform additional cleanup inside the frozen loader merely for style.
+```ini
+[EnabledMods]
+; My Mod=100
+```
+
+Only `0` and `100` are accepted as public toggle values.
+
+## Intentionally not shipped in the runtime ZIP
+
+- source code
+- PDB files
+- RaimiHook debug/research logs
+- persistent PostFX research log
+- persistent resource-request log
+- developer test mods
+- automatic example activation
+- extra dependency folders

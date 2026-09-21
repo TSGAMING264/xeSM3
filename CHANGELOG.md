@@ -1,17 +1,6 @@
-# v0.1.1
-
-INI and release-packaging hotfix.
-
-- Fixed duplicate mod entries so the last assignment wins
-- Prevented legacy root-level `mods.config.ini` resurrection
-- Added UTF-8 BOM-safe INI parsing
-- Removed auto-enabled example behavior from the release package
-- Corrected the release ZIP to use a true drop-in root layout
-- Preserved all six MESH, MAT, TEX, ANIM, SKEL, and ASKL routes
-
 # v0.1.0
 
-Initial public release.
+Final tested first public release.
 
 - MESH replacement
 - MAT replacement
@@ -19,9 +8,17 @@ Initial public release.
 - ANIM replacement
 - SKEL replacement
 - ASKL replacement
+- Standalone WRAP input support with fail-closed validation
+- Internal WRAP pointer/fixup normalization and external/global token preservation
 - Scoped PCPACK/APKF resource replacement
 - Multiple mod package support
 - `0` / `100` config system
-- Included TESTMOD
+- Deterministic last-assignment-wins mod conflict handling
+- V10.5.72 native PostFX integration
+- Adaptive Xbox-style bloom and RESZ/INTZ sampleable depth
+- F18 depth-aware final combine
+- ImageZoom/camera-motion ZBlur
+- Native GodRay restoration and stock duplicate suppression
+- Alt-Tab/D3D9 Reset crash fix
 - Spider-Man model example
 - Loading-screen TEX example

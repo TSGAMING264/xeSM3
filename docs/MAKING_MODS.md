@@ -90,6 +90,21 @@ xeSM3 v0.1.0 supports these routes:
 
 The loose file must still be valid for the game and the target resource. xeSM3 redirects resource loading; it does not automatically repair malformed model, material, texture, animation, or skeleton data.
 
+## WRAP Input
+
+Standalone WRAP containers are accepted for the existing native routes, including names such as:
+
+```text
+0xHASH.name.wrap.mesh
+0xHASH.name.wrap.tex
+0xHASH.name.wrap.mat
+0xHASH.name.wrap.anim
+0xHASH.name.wrap.skel
+0xHASH.name.wrap.askl
+```
+
+xeSM3 validates and unwraps WRAP files in memory, removes `.wrap` before native resource-name hashing, and passes the normalized native resource through the same strict loader path. Malformed input fails closed, and original PCPACK/APKF archives are not modified.
+
 ## Reference Examples
 
 The release does not install or enable an example mod. The source contains reference-only character MESH and loading-screen TEX examples under `Examples/`. Copy one into a deliberately named folder under `Mods` and enable that folder only when you intend to test it.

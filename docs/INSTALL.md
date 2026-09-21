@@ -1,11 +1,11 @@
 # Installing xeSM3
 
-xeSM3 v0.1.1 is the INI and packaging hotfix for the Windows x86 xeSM3 v0.1.0 loader for *Spider-Man 3*.
+xeSM3 v0.1.0 is a Windows x86 mod loader and native PostFX restoration project for *Spider-Man 3*.
 
 ## What You Need
 
 - An installed copy of the original Spider-Man 3 PC game
-- The tested xeSM3 v0.1.1 release package from [GitHub Releases](https://github.com/TSGAMING264/xeSM3/releases/latest)
+- The tested xeSM3 v0.1.0 release package from [GitHub Releases](https://github.com/TSGAMING264/xeSM3/releases/tag/v0.1.0)
 - Permission to copy files into the directory containing `Game.exe`
 
 Do not download random DLL mirrors. Use the release package published by TSGAMING264.
@@ -14,10 +14,8 @@ Do not download random DLL mirrors. Use the release package published by TSGAMIN
 
 1. Download and extract the latest xeSM3 release ZIP.
 2. Open the folder containing the game's `Game.exe`.
-3. Copy `dbghelp.dll`, `xeSM3.dll`, and the complete `Mods` directory beside `Game.exe`.
+3. Copy `dbghelp.dll`, `xeSM3.dll`, `xeSM3.ini`, and the complete `Mods` directory beside `Game.exe`.
 4. Keep the filenames unchanged.
-
-The v0.1.1 ZIP is a drop-in package: these files and folders are at the ZIP root, not inside a second wrapper directory.
 
 The result should be:
 
@@ -26,6 +24,7 @@ Spider-Man 3\
 ├── Game.exe
 ├── dbghelp.dll
 ├── xeSM3.dll
+├── xeSM3.ini
 └── Mods\
     ├── mods.config.ini
     ├── filelist.txt
@@ -34,6 +33,19 @@ Spider-Man 3\
 ```
 
 Both DLLs are required. `dbghelp.dll` is the bootstrap, and it loads `xeSM3.dll` from the same directory.
+
+## PostFX Configuration
+
+`xeSM3.ini` uses the same strict public toggle values: `0` is disabled and `100` is enabled.
+
+```ini
+[PostProcessing]
+PostProcessFix=100
+PostProcessRetailXbox=0
+PostProcessDebugXbox=100
+```
+
+The shipped default uses the qualified Debug Xbox route. `PostProcessRetailXbox` remains available for retail Xbox comparison/restoration, while `PostProcessFix` controls the master/native fix. The renderer restoration is compiled into `xeSM3.dll`; normal xeSM3 operation does not require `d3d9.dll` or RaimiHook.
 
 ## Enabling a Mod
 
@@ -109,4 +121,4 @@ When a future xeSM3 version is released, follow its release notes. Back up your 
 
 ## Uninstalling
 
-Remove `dbghelp.dll` and `xeSM3.dll` from beside `Game.exe`. Remove the `Mods` directory only if you also want to remove your installed mods and configuration.
+Remove `dbghelp.dll`, `xeSM3.dll`, and `xeSM3.ini` from beside `Game.exe`. Remove the `Mods` directory only if you also want to remove your installed mods and configuration.

@@ -1,13 +1,13 @@
 # xeSM3
 
-**Spider-Man 3 PC Loose Resource Mod Loader**  
+**Spider-Man 3 PC Mod Loader and Native Renderer Restoration Project**
 **Created by TSGAMING264**
 
 [**Download Latest xeSM3 Release**](https://github.com/TSGAMING264/xeSM3/releases/latest)
 
-xeSM3 allows resources in the Windows PC version of *Spider-Man 3* to be replaced with loose files stored inside a `Mods` directory. Mods can replace supported resources without rebuilding the game's original PCPACK archives.
+xeSM3 is a Spider-Man 3 PC mod loader and native renderer restoration project created by TSGAMING264.
 
-The initial public release is **xeSM3 v0.1.0** for **Spider-Man 3 PC / Windows x86**. The latest **v0.1.1 INI hotfix** keeps the same frozen resource-loader routes while correcting configuration behavior and release packaging.
+**v0.1.0** adds strict loose-resource mod loading, WRAP resource support, and restored Xbox-derived post-processing features using Spider-Man 3 PC's dormant/native rendering systems. It targets **Spider-Man 3 PC / Windows x86**.
 
 ## Features
 
@@ -20,6 +20,15 @@ The initial public release is **xeSM3 v0.1.0** for **Spider-Man 3 PC / Windows x
 - Arbitrary-size ANIM replacement
 - Skeleton replacement
 - ASKL replacement
+- Standalone WRAP input support
+- Deterministic mod conflict handling
+- Strict `0` / `100` enablement
+- Adaptive Xbox-style bloom
+- RESZ / INTZ sampleable-depth recovery
+- Depth-aware F18 final combine
+- ImageZoom / camera-motion ZBlur
+- Native GodRay restoration with duplicate suppression
+- D3D9 Alt-Tab/device-reset recovery
 
 Supported loose resource types:
 
@@ -36,6 +45,7 @@ Download the latest packaged release from [GitHub Releases](https://github.com/T
 
 - `dbghelp.dll`
 - `xeSM3.dll`
+- `xeSM3.ini`
 - `Mods\`
 
 Your game directory should look like this:
@@ -45,6 +55,7 @@ Spider-Man 3\
 ├── Game.exe
 ├── dbghelp.dll
 ├── xeSM3.dll
+├── xeSM3.ini
 └── Mods\
 ```
 
@@ -67,6 +78,27 @@ The only supported values are:
 ```
 
 The name on the left must exactly match the mod directory name inside `Mods`.
+
+## PostFX Configuration
+
+The release ships with this recommended configuration in `xeSM3.ini`:
+
+```ini
+[PostProcessing]
+PostProcessFix=100
+PostProcessRetailXbox=0
+PostProcessDebugXbox=100
+```
+
+`0` means disabled and `100` means enabled. Other public numeric values are not supported.
+
+- `PostProcessDebugXbox`: the currently qualified and recommended Xbox-derived restoration route.
+- `PostProcessRetailXbox`: the retained retail Xbox comparison/restoration route.
+- `PostProcessFix`: master/native PostFX fix enablement.
+
+If multiple routes are enabled, internal selection order is Debug Xbox, Retail Xbox, PostProcessFix, then Retail PC. This is route selection, not a public numeric-priority system.
+
+The PostFX implementation restores and reuses native Spider-Man 3 PC renderer infrastructure. It is compiled directly into `xeSM3.dll`; it is not an external ReShade-style filter and does not require `d3d9.dll` for normal operation.
 
 ## Making Mods
 
@@ -98,6 +130,17 @@ Mods\My Loading Screen\
 No example mod is installed or enabled automatically. Reference resources remain under `src/xeSM3/Examples/` and must be copied into a deliberately created mod folder before they can load.
 
 See [docs/MAKING_MODS.md](docs/MAKING_MODS.md) for path rules, hashes, catalogs, and example workflows.
+
+## WRAP Resources
+
+xeSM3 accepts standalone Treyarch/WoS-style WRAP resources such as:
+
+```text
+0xHASH.name.wrap.mesh
+0xHASH.name.wrap.tex
+```
+
+WRAP is an input container for the existing MESH, MAT, TEX, ANIM, SKEL, and ASKL routes. xeSM3 validates and unwraps it in memory, normalizes internal pointers, preserves external/global resource tokens, removes `.wrap` before native resource-name hashing, and passes the normalized resource into the existing strict loader path. Malformed WRAP input fails closed and leaves the stock resource in control. Source PCPACK/APKF archives are never rewritten.
 
 ## Compatibility
 
@@ -141,7 +184,7 @@ These tools are still an evolving part of the project. Read [docs/BLENDER.md](do
 ## Notes
 
 - xeSM3 v0.1.0 targets the Windows x86 release of Spider-Man 3 PC.
-- xeSM3 v0.1.1 fixes INI parsing and drop-in packaging without changing any of the six loose-resource routes.
+- xeSM3 v0.1.0 includes the tested V10.5.72 native PostFX integration and Alt-Tab/D3D9 Reset recovery.
 - Only `Mods\mods.config.ini` is authoritative; a root-level `mods.config.ini` is ignored.
 - Duplicate mod entries use last-assignment-wins behavior.
 - Public Release builds intentionally compile startup diagnostic popups out.
@@ -169,7 +212,7 @@ This is an invitation to contribute and build on a working foundation—not a wa
 
 > I have a lot of faith in the Spider-Man modding community, and I hope xeSM3 gives people a strong foundation to build from.
 
-The post-processing fix is **not included** in xeSM3 v0.1.0. It is still planned and is coming later; it is not a blocker for this release.
+The v0.1.0 PostFX restoration is included directly in `xeSM3.dll` and uses the tested narrow D3D9 Reset and DrawPrimitive hook pair.
 
 **xeSM3 v0.1.0 is the beginning, not the end. ❤️**
 

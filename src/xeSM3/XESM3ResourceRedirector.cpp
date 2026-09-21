@@ -22,7 +22,7 @@
 
 
 // -----------------------------------------------------------------------------
-// SM3 Resource Redirector - Stage 2C v7.17.4.0 FINAL RELEASE FREEZE + retained proven NativeASKL/TEX/ANIM/MAT/MESH/SKEL routes
+// SM3 Resource Redirector - Stage 2C v7.17.4.0 FINAL RELEASE FREEZE + retained proven NativeASKL/TEX/ANIM/MAT/MESH/SKEL routes + standalone WRAP input
 // -----------------------------------------------------------------------------
 // Runtime chain discovered during reverse engineering:
 //   009CA850 -> DAT_01150D38 -> 008C8740 -> DAT_0110671C -> 007C7900
@@ -1116,6 +1116,15 @@ namespace
         if (stem.empty())
             return;
 
+        // WRAP is an input-container marker, not part of the native SM3 resource
+        // identity. Normalize it before explicit-hash parsing and fallback hashing
+        // so both foo.wrap.mesh and 0xHASH.foo.wrap.mesh resolve as foo.mesh.
+        if (stem.size() > 5 && _stricmp(stem.c_str() + stem.size() - 5, ".wrap") == 0)
+            stem.resize(stem.size() - 5);
+
+        if (stem.empty())
+            return;
+
         size_t hashOffset = 0;
         if (TryFindExplicitHashInText(stem, hash, &hashOffset))
         {
@@ -1124,12 +1133,6 @@ namespace
                 logicalName = stem.substr(afterHash + 1);
             else
                 logicalName = stem;
-
-            // SM3 uses native .tex rather than WoS .wrap.tex. If a convenience
-            // filename includes a trailing .wrap marker, do not make it part of
-            // the logical resource name.
-            if (logicalName.size() > 5 && _stricmp(logicalName.c_str() + logicalName.size() - 5, ".wrap") == 0)
-                logicalName.resize(logicalName.size() - 5);
         }
         else
         {
@@ -1237,22 +1240,93 @@ namespace
 
         fputs(
             "; ============================================================\n"
-            "; xeSM3 v0.1.0 - INI HOTFIX\n"
+            "; xeSM3 - Spider-Man 3 PC Loose Resource Mod Loader\n"
             "; Created by TSGAMING264\n"
+            "; Public Release: v0.1.0\n"
             "; ============================================================\n"
             ";\n"
-            "; ONLY this file is read:\n"
-            ";   <Game.exe>\\Mods\\mods.config.ini\n"
+            "; On game startup, every enabled mod directory listed under\n"
+            "; [EnabledMods] is scanned recursively for loose replacement files.\n"
             ";\n"
-            "; 0   = Disabled\n"
-            "; 100 = Enabled\n"
+            "; xeSM3 uses the original Spider-Man 3 archive structure:\n"
             ";\n"
-            "; LAST assignment wins if a mod name appears more than once.\n"
+            ";   Mods\\<Mod Name>\\<PACK>\\<APKF>\\<resource>\n"
+            ";\n"
+            "; Examples:\n"
+            ";\n"
+            ";   Mods\\My Character Mod\\CH_SPIDERMAN\\_O0069.0xCFB154CD.T36.apkf\\0xAC92103D.ch_spiderman000.mesh\n"
+            ";\n"
+            ";   Mods\\My Loading Screen\\SPIDERMANLOGO\\_O0001.0x348E72F4.T36.apkf\\0xDEF62318.i_loading_screen_bkg.tex\n"
+            ";\n"
+            "; Supported loose resource types:\n"
+            ";\n"
+            ";   MESH\n"
+            ";   MAT\n"
+            ";   TEX\n"
+            ";   ANIM\n"
+            ";   SKEL\n"
+            ";   ASKL\n"
+            ";\n"
+            "; Standalone WRAP input is also supported for the same native routes.\n"
+            "; Name WRAP resources as 0xHASH.name.wrap.mesh / .wrap.tex / etc.\n"
+            "; WRAP internal fixups are normalized in memory; archives are not rewritten.\n"
+            ";\n"
+            "; Reference catalogs:\n"
+            ";\n"
+            ";   filelist.txt\n"
+            ";   filelist.apkf.txt\n"
+            ";   filelist.apkf.paths.txt\n"
+            ";\n"
+            "; ============================================================\n"
+            "; MOD ENABLE / DISABLE VALUES\n"
+            "; ============================================================\n"
+            ";\n"
+            "; xeSM3 intentionally uses only two values:\n"
+            ";\n"
+            ";   0   = Disabled\n"
+            ";   100 = Enabled\n"
+            ";\n"
+            "; Other numeric priority values are NOT supported.\n"
+            "; The name on the left must exactly match the mod folder under Mods\\.\n"
             ";\n"
             "; Example:\n"
-            ";   My Mod=100\n"
             ";\n"
-            "; No example/test mod is enabled by default.\n"
+            ";   My First Mod=100\n"
+            ";   Disabled Mod=0\n"
+            ";\n"
+            "; ============================================================\n"
+            "; SPECIAL THANKS / CREDITS\n"
+            "; ============================================================\n"
+            ";\n"
+            "; HUGE shoutout to Kirbystealer, the legend behind exWoS.\n"
+            "; exWoS was a massive inspiration for xeSM3 and proved what was\n"
+            "; possible with this style of loose-resource mod loading.\n"
+            "; Without Kirbystealer and exWoS, xeSM3 would not exist.\n"
+            ";\n"
+            "; HUGE shoutout to AkyrosXD for recreating the Spider-Man 3\n"
+            "; Debug Menu. The SM3 Debug Menu became one of the most important\n"
+            "; tools used during the research and reverse-engineering process\n"
+            "; that eventually led to xeSM3.\n"
+            ";\n"
+            "; HUGE shoutout to Josuke777 for making a serious attempt at\n"
+            "; recreating/cloning exWoS for Spider-Man 3 and for sharing notes,\n"
+            "; discoveries, methods, and model-importing research.\n"
+            ";\n"
+            "; HUGE shoutout to Arc for helping throughout xeSM3 testing and\n"
+            "; release QA, including compatibility testing and test planning.\n"
+            ";\n"
+            "; HUGE thanks to tmprogamer for beta testing xeSM3 and helping put\n"
+            "; the loader through real-world testing.\n"
+            "; https://next.nexusmods.com/profile/tmprogamer\n"
+            ";\n"
+            "; HUGE thanks to ArchiverOfTriviality for beta testing xeSM3 and\n"
+            "; helping verify stability, compatibility, and mod-loading behavior.\n"
+            ";\n"
+            "; xeSM3 exists because of years of experimentation, reverse\n"
+            "; engineering, testing, and knowledge shared throughout the\n"
+            "; Spider-Man modding community.\n"
+            ";\n"
+            "; Thank you to everyone who helped make this possible.\n"
             "; ============================================================\n"
             "\n"
             "[Info]\n"
@@ -1263,7 +1337,8 @@ namespace
             "[EnabledMods]\n"
             "\n"
             "; Add installed mod folders below.\n"
-            "; My Mod=100\n",
+            "; Example:\n"
+            "; My First Mod=100\n",
             file);
         fclose(file);
     }
@@ -1338,6 +1413,11 @@ namespace
             info.configOrder = order++;
 
             // v0.1.0 INI HOTFIX: normal INI behavior is LAST assignment wins.
+            // Previously:
+            //   TESTMOD=100
+            //   TESTMOD=0
+            // produced TWO package records, so the first enabled record was still
+            // scanned and the mod looked permanently enabled.
             auto existing = std::find_if(
                 packages.begin(),
                 packages.end(),
@@ -2289,6 +2369,322 @@ namespace
             return false;
         }
 
+        return true;
+    }
+
+
+    // Release WRAP support ---------------------------------------------------
+    // WebOfShadowsTools/exWoS standalone resources use a small WRAP container:
+    //   "WRAP" + archive hash + component table + patch table + components.
+    // The internal patch list stores pointer values relative to the pointer field.
+    // xeSM3's proven native adapters consume a flat local-offset representation,
+    // so normalize WRAP components into one contiguous buffer and translate ONLY
+    // internal pointer fixups to flat offsets. External/global resource-reference
+    // tokens stay untouched and are resolved by the existing strict stock/runtime
+    // ownership paths. No PCPACK/APKF bytes are rewritten.
+    constexpr uint32_t XESM3_WRAP_MAGIC = 0x50415257u; // "WRAP" little-endian
+    constexpr size_t XESM3_WRAP_MAX_COMPONENTS = 16u;
+    constexpr size_t XESM3_WRAP_MAX_PATCHES = 1u << 20;
+    constexpr size_t XESM3_WRAP_MAX_FLAT_BYTES = 64u * 1024u * 1024u;
+
+    struct XESM3WrapComponent
+    {
+        size_t wrapperOffset = 0;
+        size_t size = 0;
+        size_t flatOffset = 0;
+    };
+
+    bool TryReadWrapU32(const std::vector<uint8_t>& bytes, size_t offset, uint32_t& value)
+    {
+        if (offset > bytes.size() || bytes.size() - offset < sizeof(uint32_t))
+            return false;
+        memcpy(&value, bytes.data() + offset, sizeof(value));
+        return true;
+    }
+
+    bool TryReadWrapS32(const std::vector<uint8_t>& bytes, size_t offset, int32_t& value)
+    {
+        if (offset > bytes.size() || bytes.size() - offset < sizeof(int32_t))
+            return false;
+        memcpy(&value, bytes.data() + offset, sizeof(value));
+        return true;
+    }
+
+    bool TryResolveWrapRelativePointer(
+        const std::vector<uint8_t>& bytes,
+        size_t fieldOffset,
+        size_t& targetOffset)
+    {
+        int32_t relative = 0;
+        if (!TryReadWrapS32(bytes, fieldOffset, relative))
+            return false;
+
+        const int64_t resolved =
+            static_cast<int64_t>(fieldOffset) + static_cast<int64_t>(relative);
+        if (resolved < 0 || static_cast<uint64_t>(resolved) > bytes.size())
+            return false;
+
+        targetOffset = static_cast<size_t>(resolved);
+        return true;
+    }
+
+    bool TryMapWrapOffsetToFlat(
+        const std::vector<XESM3WrapComponent>& components,
+        size_t wrapperOffset,
+        size_t bytesNeeded,
+        size_t& flatOffset)
+    {
+        for (const XESM3WrapComponent& component : components)
+        {
+            if (wrapperOffset < component.wrapperOffset)
+                continue;
+
+            const size_t relative = wrapperOffset - component.wrapperOffset;
+            if (relative > component.size || bytesNeeded > component.size - relative)
+                continue;
+
+            flatOffset = component.flatOffset + relative;
+            return true;
+        }
+        return false;
+    }
+
+    bool TryUnwrapLooseResource(
+        const std::vector<uint8_t>& wrapped,
+        std::vector<uint8_t>& flat,
+        std::string& error)
+    {
+        flat.clear();
+        error.clear();
+
+        uint32_t magic = 0;
+        if (!TryReadWrapU32(wrapped, 0x00u, magic) || magic != XESM3_WRAP_MAGIC)
+        {
+            error = "not a WRAP resource";
+            return false;
+        }
+        if (wrapped.size() < 0x14u)
+        {
+            error = "WRAP header is truncated";
+            return false;
+        }
+
+        size_t patchTableOffset = 0;
+        size_t componentTableOffset = 0;
+        uint32_t componentCount = 0;
+        if (!TryResolveWrapRelativePointer(wrapped, 0x08u, patchTableOffset) ||
+            !TryReadWrapU32(wrapped, 0x0Cu, componentCount) ||
+            !TryResolveWrapRelativePointer(wrapped, 0x10u, componentTableOffset))
+        {
+            error = "WRAP header pointers are invalid";
+            return false;
+        }
+        if (componentCount == 0u || componentCount > XESM3_WRAP_MAX_COMPONENTS)
+        {
+            error = "WRAP component count is outside safe range";
+            return false;
+        }
+
+        const uint64_t componentTableBytes =
+            static_cast<uint64_t>(componentCount) * 8ull;
+        if (componentTableOffset > wrapped.size() ||
+            componentTableBytes > wrapped.size() - componentTableOffset)
+        {
+            error = "WRAP component table is outside file";
+            return false;
+        }
+
+        std::vector<XESM3WrapComponent> components;
+        components.reserve(componentCount);
+        size_t flatSize = 0;
+        for (uint32_t i = 0; i < componentCount; ++i)
+        {
+            const size_t entryOffset = componentTableOffset + static_cast<size_t>(i) * 8u;
+            uint32_t componentSize32 = 0;
+            size_t componentOffset = 0;
+            if (!TryReadWrapU32(wrapped, entryOffset, componentSize32) ||
+                !TryResolveWrapRelativePointer(wrapped, entryOffset + 4u, componentOffset))
+            {
+                error = "WRAP component entry is invalid";
+                return false;
+            }
+
+            const size_t componentSize = static_cast<size_t>(componentSize32);
+            if (componentSize == 0u || componentOffset > wrapped.size() ||
+                componentSize > wrapped.size() - componentOffset)
+            {
+                error = "WRAP component range is outside file";
+                return false;
+            }
+            if (flatSize > XESM3_WRAP_MAX_FLAT_BYTES ||
+                componentSize > XESM3_WRAP_MAX_FLAT_BYTES - flatSize)
+            {
+                error = "WRAP flattened resource exceeds 64 MiB safety ceiling";
+                return false;
+            }
+
+            XESM3WrapComponent component{};
+            component.wrapperOffset = componentOffset;
+            component.size = componentSize;
+            component.flatOffset = flatSize;
+            components.push_back(component);
+            flatSize += componentSize;
+        }
+
+        flat.resize(flatSize);
+        for (const XESM3WrapComponent& component : components)
+        {
+            memcpy(
+                flat.data() + component.flatOffset,
+                wrapped.data() + component.wrapperOffset,
+                component.size);
+        }
+
+        // Patch table layout produced by WebOfShadowsTools Wrapper.wrapResourceFile:
+        //   +00 extCount, +04 pExt, +08 internalCount, +0C pInternal,
+        //   +10 globalCount, +14 pGlobal.
+        if (patchTableOffset > wrapped.size() || wrapped.size() - patchTableOffset < 0x18u)
+        {
+            error = "WRAP patch table is outside file";
+            flat.clear();
+            return false;
+        }
+
+        uint32_t externalCount = 0;
+        uint32_t internalCount = 0;
+        uint32_t globalCount = 0;
+        size_t externalTableOffset = 0;
+        size_t internalTableOffset = 0;
+        size_t globalTableOffset = 0;
+        if (!TryReadWrapU32(wrapped, patchTableOffset + 0x00u, externalCount) ||
+            !TryResolveWrapRelativePointer(wrapped, patchTableOffset + 0x04u, externalTableOffset) ||
+            !TryReadWrapU32(wrapped, patchTableOffset + 0x08u, internalCount) ||
+            !TryResolveWrapRelativePointer(wrapped, patchTableOffset + 0x0Cu, internalTableOffset) ||
+            !TryReadWrapU32(wrapped, patchTableOffset + 0x10u, globalCount) ||
+            !TryResolveWrapRelativePointer(wrapped, patchTableOffset + 0x14u, globalTableOffset))
+        {
+            error = "WRAP patch-table fields are invalid";
+            flat.clear();
+            return false;
+        }
+
+        if (externalCount > XESM3_WRAP_MAX_PATCHES ||
+            internalCount > XESM3_WRAP_MAX_PATCHES ||
+            globalCount > XESM3_WRAP_MAX_PATCHES)
+        {
+            error = "WRAP patch count exceeds safety ceiling";
+            flat.clear();
+            return false;
+        }
+
+        const auto tableRangeValid = [&](size_t offset, uint32_t count, size_t stride) -> bool
+        {
+            if (count == 0u)
+                return true;
+            const uint64_t size64 = static_cast<uint64_t>(count) * stride;
+            return offset <= wrapped.size() && size64 <= wrapped.size() - offset;
+        };
+
+        // External/global entries are retained in serialized form. Validate their
+        // tables so malformed WRAP inputs fail closed rather than reaching adapters.
+        if (!tableRangeValid(externalTableOffset, externalCount, 16u) ||
+            !tableRangeValid(internalTableOffset, internalCount, 4u) ||
+            !tableRangeValid(globalTableOffset, globalCount, 16u))
+        {
+            error = "WRAP patch array is outside file";
+            flat.clear();
+            return false;
+        }
+
+        for (uint32_t i = 0; i < internalCount; ++i)
+        {
+            const size_t patchEntry = internalTableOffset + static_cast<size_t>(i) * 4u;
+            size_t targetWrapperOffset = 0;
+            if (!TryResolveWrapRelativePointer(wrapped, patchEntry, targetWrapperOffset))
+            {
+                error = "WRAP internal patch target is invalid";
+                flat.clear();
+                return false;
+            }
+
+            size_t targetFlatOffset = 0;
+            if (!TryMapWrapOffsetToFlat(
+                    components, targetWrapperOffset, sizeof(uint32_t), targetFlatOffset))
+            {
+                error = "WRAP internal patch target is outside components";
+                flat.clear();
+                return false;
+            }
+
+            int32_t relativeReference = 0;
+            if (!TryReadWrapS32(wrapped, targetWrapperOffset, relativeReference))
+            {
+                error = "WRAP internal pointer value is unreadable";
+                flat.clear();
+                return false;
+            }
+
+            const int64_t referenceResolved =
+                static_cast<int64_t>(targetWrapperOffset) +
+                static_cast<int64_t>(relativeReference);
+            if (referenceResolved < 0 ||
+                static_cast<uint64_t>(referenceResolved) > wrapped.size())
+            {
+                error = "WRAP internal pointer reference is outside file";
+                flat.clear();
+                return false;
+            }
+
+            size_t referenceFlatOffset = 0;
+            if (!TryMapWrapOffsetToFlat(
+                    components,
+                    static_cast<size_t>(referenceResolved),
+                    1u,
+                    referenceFlatOffset))
+            {
+                error = "WRAP internal pointer reference is outside components";
+                flat.clear();
+                return false;
+            }
+            if (referenceFlatOffset > 0xFFFFFFFFu)
+            {
+                error = "WRAP internal pointer exceeds 32-bit local-offset range";
+                flat.clear();
+                return false;
+            }
+
+            const uint32_t localOffset = static_cast<uint32_t>(referenceFlatOffset);
+            memcpy(flat.data() + targetFlatOffset, &localOffset, sizeof(localOffset));
+        }
+
+        return true;
+    }
+
+    bool ReadLooseResourceFile(
+        const std::string& path,
+        std::vector<uint8_t>& bytes,
+        std::string& error)
+    {
+        std::vector<uint8_t> raw;
+        if (!ReadWholeFile(path, raw, error))
+            return false;
+
+        uint32_t magic = 0;
+        if (!TryReadWrapU32(raw, 0u, magic) || magic != XESM3_WRAP_MAGIC)
+        {
+            bytes.swap(raw);
+            return true;
+        }
+
+        std::vector<uint8_t> flat;
+        std::string wrapError;
+        if (!TryUnwrapLooseResource(raw, flat, wrapError))
+        {
+            error = std::string("WRAP decode failed: ") + wrapError;
+            return false;
+        }
+
+        bytes.swap(flat);
         return true;
     }
 
@@ -7105,7 +7501,7 @@ namespace
 
         std::vector<uint8_t> looseBytes;
         std::string error;
-        if (!ReadWholeFile(looseEntry.path, looseBytes, error))
+        if (!ReadLooseResourceFile(looseEntry.path, looseBytes, error))
         {
             LogNativeAnimFailureOnce(runtime.runtimeHash, runtime.runtimeName, looseEntry.path, error);
             original(context, resourceRecord, componentPointers, userData);
@@ -9023,7 +9419,7 @@ namespace
 
         std::vector<uint8_t> looseBytes;
         std::string error;
-        if (!ReadWholeFile(looseEntry.path, looseBytes, error))
+        if (!ReadLooseResourceFile(looseEntry.path, looseBytes, error))
         {
             LogNativeTexFailureOnce(hash, runtimeName, looseEntry.path, error);
             original(context, resourceRecord, componentPointers);
@@ -9416,7 +9812,7 @@ namespace
 
         std::vector<uint8_t> looseBytes;
         std::string error;
-        if (!ReadWholeFile(looseEntry.path, looseBytes, error))
+        if (!ReadLooseResourceFile(looseEntry.path, looseBytes, error))
         {
             LogNativeMatFailureOnce(hash, runtimeName, looseEntry.path, error);
             return false;
@@ -10878,7 +11274,7 @@ namespace
 
         std::vector<uint8_t> looseBytes;
         std::string error;
-        if (!ReadWholeFile(looseEntry.path, looseBytes, error))
+        if (!ReadLooseResourceFile(looseEntry.path, looseBytes, error))
         {
             LogNativeMeshFailureOnce(hash, runtimeName, looseEntry.path, error);
             original(context, resourceRecord, componentPointers);
@@ -12843,7 +13239,7 @@ namespace
 
                     std::vector<uint8_t> looseBytes;
                     std::string error;
-                    if (!ReadWholeFile(looseEntry.path, looseBytes, error))
+                    if (!ReadLooseResourceFile(looseEntry.path, looseBytes, error))
                     {
                         {
                             std::lock_guard<std::mutex> lock(s_ResourceLogMutex);
@@ -14034,7 +14430,7 @@ namespace
         // nodes, while this map is overwritten with the newest fixed topology.
         std::vector<uint8_t> looseBytes;
         std::string readError;
-        if (!ReadWholeFile(candidate.entry.path, looseBytes, readError))
+        if (!ReadLooseResourceFile(candidate.entry.path, looseBytes, readError))
         {
             LogNativeAsklShadowFailureOnce(targetHash, stockAskl, candidate.entry.path, readError.c_str());
             return false;

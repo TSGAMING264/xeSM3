@@ -1,0 +1,14 @@
+PASS: WRAP magic detector exists
+PASS: WRAP decoder is fail-closed
+PASS: internal pointers normalized to flat offsets
+PASS: external/global tables are validated
+PASS: native loose reads route through WRAP-aware reader
+PASS: .wrap is removed before resource hashing
+PASS: synthetic WRAP magic/layout parses
+PASS: PHYS separator is not copied into flattened native resource
+PASS: cross-component internal pointer becomes flat local offset
+PASS: external serialized target token is preserved
+PASS: global serialized target token is preserved
+PASS: truncated WRAP is rejected
+
+WRAP VALIDATION PASS

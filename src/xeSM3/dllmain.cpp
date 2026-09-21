@@ -9,9 +9,24 @@
 #include <detours.h>
 
 #include "XESM3ResourceRedirector.hpp"
+#include "PostFXResearch.hpp"
 
 static volatile LONG g_Started = 0;
 static volatile LONG g_StatusPopupShown = 0;
+
+// V10.5.72 production PostFX bridge. Keep this minimal and independent from
+// RaimiHook/d3d9.dll: xeSM3 hooks the game's native nglPresent directly so the
+// integrated PostFX module gets one maintenance tick per rendered frame.
+using XESM3NglPresentFn = int (__cdecl*)(void);
+static constexpr uintptr_t XESM3_NGL_PRESENT_ADDRESS = 0x008CD650;
+static XESM3NglPresentFn g_OriginalNglPresent =
+    reinterpret_cast<XESM3NglPresentFn>(XESM3_NGL_PRESENT_ADDRESS);
+
+static int __cdecl XESM3_NglPresentHook()
+{
+    PostFXResearch_OnPresent();
+    return g_OriginalNglPresent();
+}
 
 static bool IsCompatibleGameProcess()
 {
@@ -84,6 +99,13 @@ static DWORD WINAPI StartXESM3(LPVOID)
     AttachRenderMeshProbeDetour();
     AttachNativeSkelRedirectorDetour();
 
+    // V10.5.72 PostFX route (V10.5.71-qualified pixels + Reset recovery) compiled directly into xeSM3.dll.
+    // The PostFX module itself attaches only when a PostProcessing route is enabled.
+    AttachPostFXResearchDetours();
+    DetourAttach(
+        &reinterpret_cast<PVOID&>(g_OriginalNglPresent),
+        reinterpret_cast<PVOID>(XESM3_NglPresentHook));
+
     const LONG result = DetourTransactionCommit();
     if (result != NO_ERROR)
     {
@@ -94,6 +116,10 @@ static DWORD WINAPI StartXESM3(LPVOID)
 #endif
         return static_cast<DWORD>(result);
     }
+
+    // Current V10.5.72 uses no direct game-code callsite patch, but keep the
+    // proven post-Detours integration step in the release bootstrap.
+    InstallPostFXResearchCallsitePatches();
 
     InitResourceRedirector();
 

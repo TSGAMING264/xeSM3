@@ -24,7 +24,7 @@ if errorlevel 1 (
   pause
   exit /b 1
 )
-msbuild XESM3.sln /m:1 /t:Rebuild /p:Configuration=Release /p:Platform=x86
+msbuild XESM3.sln /m /t:Rebuild /p:Configuration=Release /p:Platform=x86
 if errorlevel 1 (
   echo BUILD FAILED
   pause
@@ -45,5 +45,5 @@ echo BUILD PASS - BOTH x86 DLLs
 echo Bootstrap: %~dp0bin\x86\Release\dbghelp.dll
 echo Payload:   %~dp0bin\x86\Release\xeSM3.dll
 echo.
-echo Copy BOTH DLLs and the Mods folder beside Game.exe.
+echo Copy BOTH DLLs, xeSM3.ini, and the Mods folder beside Game.exe.
 pause

@@ -1,0 +1,35 @@
+PASS: payload target is xeSM3
+PASS: bootstrap target is dbghelp
+PASS: payload Release diagnostics compiled out
+PASS: bootstrap Release diagnostics compiled out
+PASS: Debug diagnostics retained for troubleshooting
+PASS: bootstrap loads public payload filename
+PASS: SymInitialize forward remains
+PASS: config defaults to no enabled mods
+PASS: mod config documents 0/100
+PASS: mod toggle parser accepts only 0/100
+PASS: no generalized numeric priority winner
+PASS: public persistent resource log disabled
+PASS: PostFX source included
+PASS: PostFX header included
+PASS: public xeSM3.ini included
+PASS: Debug Xbox release route enabled
+PASS: PostFX public values document 0/100
+PASS: PostFX public parser accepts only value 100 as enabled
+PASS: PostFX bridge hooks nglPresent
+PASS: PostFX detours integrated
+PASS: public PostFX persistent log disabled
+PASS: WRAP magic support present
+PASS: WRAP decoder present
+PASS: WRAP internal pointer normalization present
+PASS: WRAP identity strips .wrap before fallback hashing
+PASS: WRAP loose paths feed native adapters
+PASS: WRAP docs use exWoS-style filename
+PASS: self-contained WRAP validator present
+PASS: three catalogs present
+PASS: no bundled developer mesh test in Mods
+PASS: Spider-Man MESH examples present
+PASS: SPIDERMANLOGO TEX example present
+PASS: public default config text embedded
+
+VALIDATION PASS
