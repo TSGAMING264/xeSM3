@@ -239,9 +239,7 @@ The v0.1.0 PostFX restoration is included directly in `xeSM3.dll` and uses the t
 
 **Tmprogamer** — Huge thanks for beta testing xeSM3 and putting the loader through real-world testing.
 
-**ArchiverOfTriviality** — Huge thanks for beta testing xeSM3 and helping verify stability, compatibility, and mod-loading behavior.
-
-**Arc** — Huge thanks for helping throughout xeSM3 testing and release QA, including compatibility testing and helping identify the D3D9 device-reset / Alt-Tab issue.
+**ArchiverOfTriviality** — Huge thanks for beta testing xeSM3 and helping throughout development and release QA, including verifying stability, compatibility, and mod-loading behavior, as well as helping identify the D3D9 device-reset / Alt-Tab issue and pushing important compatibility tests such as the 4GB Patch, non-Spider-Man model testing, and DXVK / Vulkan compatibility.
 
 **Bread** — Huge thanks for SM3 IDA coding.
 
