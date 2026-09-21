@@ -153,7 +153,7 @@ Supported names include:
 
 WRAP is an input container for the existing MESH, MAT, TEX, ANIM, SKEL, and ASKL routes. xeSM3 validates and unwraps it in memory, normalizes internal pointers, preserves external/global resource tokens, removes `.wrap` before native resource-name hashing, and passes the normalized resource into the existing strict loader path. Malformed WRAP input fails closed and leaves the stock resource in control. Source PCPACK/APKF archives are never rewritten.
 
-For NativeMESH exports, v0.1.0 also supports the Web of Shadows-style external-MAT contract. A mesh material field may remain `0` while the WRAP external patch supplies the real MAT filename hash and target field. xeSM3 resolves that existing MAT by resource type and hash through the game's resolver. The serialized-material fallback remains available for raw MESH files and older WRAP MESH mods.
+For NativeMESH exports, v0.1.0 also supports the Web of Shadows-style external-MAT contract. A mesh material field may remain `0` while the WRAP external patch supplies the real MAT filename hash and target field. xeSM3 first scans already-loaded stock mesh sections for that live MAT hash and reuses the exact live MAT pointer, then falls back to the game's global resource resolver when no stock match is found. The serialized-material fallback remains available for raw MESH files and older WRAP MESH mods. This stock-match path was verified in game with a Blender v0.5.1 zero-field WRAP mesh using MAT hash `0xE52A3DF4`.
 
 ## Compatibility
 

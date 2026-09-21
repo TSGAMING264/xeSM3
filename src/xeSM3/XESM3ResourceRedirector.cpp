@@ -8174,6 +8174,79 @@ namespace
         }
     }
 
+    // Forward declarations for baseline SEH-safe readers defined later in this file.
+    bool TryReadMeshSectionCountSafe(void* runtimeMesh, uint32_t* outSectionCount);
+    bool TryReadOwnershipAuditDwords(void* object, uint32_t* dwords, uint32_t count);
+
+    bool TryGetStockMeshSectionMaterialHash(
+        uint8_t* stockRuntimeMesh,
+        uint32_t sectionIndex,
+        void*& materialPointer,
+        uint32_t& materialHash)
+    {
+        materialPointer = nullptr;
+        materialHash = 0;
+
+        uint8_t* section = nullptr;
+        if (!TryGetStockMeshSection(stockRuntimeMesh, sectionIndex, section) || section == nullptr)
+            return false;
+
+        // Reuse the baseline SEH-safe raw reader instead of adding any new SEH
+        // to the WoS external-MAT feature. MeshInfo+0x20 is the live MAT pointer;
+        // runtime MAT +0x04 is its resource hash.
+        uint32_t sectionMaterialRaw[1]{};
+        if (!TryReadOwnershipAuditDwords(section + 0x20, sectionMaterialRaw, 1) ||
+            sectionMaterialRaw[0] == 0)
+        {
+            return false;
+        }
+
+        void* candidate = reinterpret_cast<void*>(
+            static_cast<uintptr_t>(sectionMaterialRaw[0]));
+        uint32_t matRaw[2]{};
+        if (!TryReadOwnershipAuditDwords(candidate, matRaw, 2) || matRaw[1] == 0)
+            return false;
+
+        materialPointer = candidate;
+        materialHash = matRaw[1];
+        return true;
+    }
+
+    void* FindStockRuntimeMaterialByHash(
+        uint8_t* stockRuntimeMesh,
+        uint32_t targetMaterialHash,
+        uint32_t& matchedSectionIndex)
+    {
+        matchedSectionIndex = 0xFFFFFFFFu;
+        if (stockRuntimeMesh == nullptr || targetMaterialHash == 0)
+            return nullptr;
+
+        uint32_t sectionCount = 0;
+        if (!TryReadMeshSectionCountSafe(stockRuntimeMesh, &sectionCount) ||
+            sectionCount == 0 || sectionCount > 128u)
+        {
+            return nullptr;
+        }
+
+        for (uint32_t i = 0; i < sectionCount; ++i)
+        {
+            void* material = nullptr;
+            uint32_t materialHash = 0;
+            if (TryGetStockMeshSectionMaterialHash(
+                    stockRuntimeMesh,
+                    i,
+                    material,
+                    materialHash) &&
+                materialHash == targetMaterialHash)
+            {
+                matchedSectionIndex = i;
+                return material;
+            }
+        }
+
+        return nullptr;
+    }
+
     bool TryGetCatalogResourceName(
         uint32_t resourceType,
         uint32_t resourceHash,
@@ -8263,18 +8336,44 @@ namespace
     }
 
     void* ResolveWrapExternalMaterialForMeshSection(
+        uint8_t* stockRuntimeMesh,
         uint32_t runtimeHash,
         uint32_t looseSectionIndex,
         size_t materialFieldFlatOffset,
         const XESM3WrapExternalPatch& externalMat)
     {
-        // Keep all STL/RAII state out of ResolveChSpidermanPlayerMaterialPointer().
-        // That baseline function contains an MSVC SEH (__try/__except) guard, so
-        // introducing std::string locals there triggers C2712. This helper contains
-        // no SEH and can safely own the strings needed for catalog lookup/logging.
+        // Preferred path: resolve the external MAT hash against the already-fixed
+        // material pointers on the stock runtime mesh. This reproduces the result
+        // that APKF external-reference fixups would have produced, and avoids the
+        // timing problem observed when asking the global resource resolver during
+        // NativeMESH dispatch.
+        uint32_t stockMatSection = 0xFFFFFFFFu;
+        void* resolved = FindStockRuntimeMaterialByHash(
+            stockRuntimeMesh,
+            externalMat.resourceHash,
+            stockMatSection);
+        if (resolved != nullptr)
+        {
+            char applyLine[1800]{};
+            sprintf_s(
+                applyLine,
+                "[WRAP] EXT-MAT-APPLY meshHash=%08X section=%u targetFlat=0x%X matHash=%08X stockMatSection=%u runtimeMat=%p mode=STOCK-MESH-HASH-MATCH",
+                runtimeHash,
+                looseSectionIndex,
+                static_cast<unsigned int>(materialFieldFlatOffset),
+                externalMat.resourceHash,
+                stockMatSection,
+                resolved);
+            WriteResourceLogLine(applyLine);
+            return resolved;
+        }
+
+        // Fallback for valid MAT hashes not present on the target stock mesh. Keep
+        // all STL/RAII state out of ResolveChSpidermanPlayerMaterialPointer().
+        // That baseline function contains MSVC SEH and must remain RAII-free.
         std::string resourceName;
         std::string resolveError;
-        void* resolved = ResolveWrapExternalResourcePointer(
+        resolved = ResolveWrapExternalResourcePointer(
             SM3_RESOURCE_TYPE_MAT,
             externalMat.resourceHash,
             resourceName,
@@ -8325,6 +8424,7 @@ namespace
         if (externalMat != nullptr)
         {
             return ResolveWrapExternalMaterialForMeshSection(
+                stockRuntimeMesh,
                 runtimeHash,
                 looseSectionIndex,
                 materialFieldFlatOffset,

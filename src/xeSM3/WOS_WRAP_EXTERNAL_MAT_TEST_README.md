@@ -57,3 +57,21 @@ This test branch adds **no new `__try/__except` blocks**. External MAT resolutio
 
 ## C2712 actual fix
 The first C2712 attempts only counted SEH blocks. The actual conflict was `std::string` locals added to the pre-existing `ResolveChSpidermanPlayerMaterialPointer()` SEH function. Those strings now live in `ResolveWrapExternalMaterialForMeshSection()`, which contains no SEH. The fallback function keeps its baseline SEH but no new RAII locals. Run `VALIDATE_C2712_ACTUAL_FIX.py` before building.
+
+## 2026-09-21 isolation result: stock-runtime MAT hash match
+
+The first in-game WoS external-MAT test exported four 000 sections with zero material fields and four external `MAT 0xE52A3DF4` patches. The texture override loaded, but the custom geometry fell back to stock.
+
+A one-variable isolation mesh using the exact same custom geometry/weights/UVs, with external MAT patches disabled and `0x00000614` restored in all four material fields, immediately displayed the custom model in game. This proves the 000 geometry/NativeMESH path is good and isolates the failure to external-MAT runtime resolution.
+
+The loader now resolves a WRAP external MAT hash in this order:
+
+1. Scan the already-fixed stock runtime MESH sections.
+2. Read each live section MAT pointer at `MeshInfo + 0x20`.
+3. Read the live MAT resource hash at `MAT + 0x04`.
+4. If the hash matches the WRAP external MAT hash, reuse that exact live MAT pointer.
+5. Only if no stock-mesh MAT hash matches, fall back to the global resource resolver/catalog path.
+
+For `ch_spiderman000`, `0xE52A3DF4 ch_spidermanspider` therefore resolves to the same live material pointer reached by the proven stock serialized reference `0x00000614`, without hard-coding `0x0614` into Blender exports.
+
+This keeps the Blender file WoS-style (`MESH material field = 0` + external MAT hash patch) while adapting the external fixup to SM3's proven runtime objects.

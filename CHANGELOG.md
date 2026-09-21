@@ -11,6 +11,8 @@ Final tested first public release.
 - Standalone WRAP input support with fail-closed validation
 - Internal WRAP pointer/fixup normalization and external/global token preservation
 - Web of Shadows-style WRAP external-MAT resolution for NativeMESH exports
+- Stock runtime mesh MAT-hash matching now precedes the global resolver fallback and reuses the exact live MAT pointer
+- In-game verified with a Blender v0.5.1 zero-field WRAP mesh using MAT hash `0xE52A3DF4`
 - Existing serialized-material fallback retained for raw and older WRAP MESH mods
 - Scoped PCPACK/APKF resource replacement
 - Multiple mod package support
