@@ -36,7 +36,9 @@ Both DLLs are required. `dbghelp.dll` is the bootstrap, and it loads `xeSM3.dll`
 
 ## PostFX Configuration
 
-`xeSM3.ini` uses the same strict public toggle values: `0` is disabled and `100` is enabled.
+`xeSM3.ini` uses the same strict public toggle values: `0` is disabled and `100` is enabled. Keep `PostProcessFix=100`, then enable only one Xbox profile at a time. The Xbox profiles are alternatives and should be switched one at a time.
+
+Debug Xbox (qualified and recommended):
 
 ```ini
 [PostProcessing]
@@ -45,7 +47,16 @@ PostProcessRetailXbox=0
 PostProcessDebugXbox=100
 ```
 
-The shipped default uses the qualified Debug Xbox route. `PostProcessRetailXbox` remains available for retail Xbox comparison/restoration, while `PostProcessFix` controls the master/native fix. The renderer restoration is compiled into `xeSM3.dll`; normal xeSM3 operation does not require `d3d9.dll` or RaimiHook.
+Retail Xbox:
+
+```ini
+[PostProcessing]
+PostProcessFix=100
+PostProcessRetailXbox=100
+PostProcessDebugXbox=0
+```
+
+Do not enable both Xbox profiles at the same time. The shipped default uses the qualified Debug Xbox route. `PostProcessRetailXbox` remains available for retail Xbox comparison/restoration, while `PostProcessFix` controls the master/native fix. The renderer restoration is compiled into `xeSM3.dll`; normal xeSM3 operation does not require `d3d9.dll` or RaimiHook.
 
 ## Enabling a Mod
 

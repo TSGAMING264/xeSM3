@@ -81,7 +81,9 @@ The name on the left must exactly match the mod directory name inside `Mods`.
 
 ## PostFX Configuration
 
-The release ships with this recommended configuration in `xeSM3.ini`:
+Keep `PostProcessFix=100`, then enable only one Xbox profile at a time. The Xbox profiles are alternatives and should be switched one at a time.
+
+**Debug Xbox (qualified and recommended):**
 
 ```ini
 [PostProcessing]
@@ -90,13 +92,20 @@ PostProcessRetailXbox=0
 PostProcessDebugXbox=100
 ```
 
-`0` means disabled and `100` means enabled. Other public numeric values are not supported.
+**Retail Xbox:**
+
+```ini
+[PostProcessing]
+PostProcessFix=100
+PostProcessRetailXbox=100
+PostProcessDebugXbox=0
+```
+
+`0` means disabled and `100` means enabled. Other public numeric values are not supported. Do not enable both Xbox profiles at the same time.
 
 - `PostProcessDebugXbox`: the currently qualified and recommended Xbox-derived restoration route.
 - `PostProcessRetailXbox`: the retained retail Xbox comparison/restoration route.
-- `PostProcessFix`: master/native PostFX fix enablement.
-
-If multiple routes are enabled, internal selection order is Debug Xbox, Retail Xbox, PostProcessFix, then Retail PC. This is route selection, not a public numeric-priority system.
+- `PostProcessFix`: master/native PostFX fix enablement; keep this set to `100` when using either Xbox profile.
 
 The PostFX implementation restores and reuses native Spider-Man 3 PC renderer infrastructure. It is compiled directly into `xeSM3.dll`; it is not an external ReShade-style filter and does not require `d3d9.dll` for normal operation.
 
@@ -133,7 +142,7 @@ See [docs/MAKING_MODS.md](docs/MAKING_MODS.md) for path rules, hashes, catalogs,
 
 ## WRAP Resources
 
-xeSM3 accepts standalone Treyarch/WoS-style WRAP resources such as:
+Introduced in v0.1.0, xeSM3 accepts standalone Treyarch/WoS-style WRAP resources such as:
 
 ```text
 0xHASH.name.wrap.mesh
@@ -206,11 +215,11 @@ The Blender side of the project is not TSGAMING264's strongest area. A lot of ef
 - Materials
 - Texture workflows
 - Blender compatibility
-- Reliability
+- Exporter reliability
 
 This is an invitation to contribute and build on a working foundation—not a warning that the project is unusable.
 
-> I have a lot of faith in the Spider-Man modding community, and I hope xeSM3 gives people a strong foundation to build from.
+> I have a lot of faith in the Spider-Man modding community, and I hope people can continue improving the Blender side while building on the foundation xeSM3 provides.
 
 The v0.1.0 PostFX restoration is included directly in `xeSM3.dll` and uses the tested narrow D3D9 Reset and DrawPrimitive hook pair.
 
@@ -232,7 +241,9 @@ The v0.1.0 PostFX restoration is included directly in `xeSM3.dll` and uses the t
 
 **ArchiverOfTriviality** — Huge thanks for beta testing xeSM3 and helping verify stability, compatibility, and mod-loading behavior.
 
-**Arc** — Huge shoutout for helping throughout xeSM3 testing and release QA, including pushing important compatibility tests such as the 4GB Patch, non-Spider-Man model testing, and DXVK / Vulkan compatibility.
+**Arc** — Huge thanks for helping throughout xeSM3 testing and release QA, including compatibility testing and helping identify the D3D9 device-reset / Alt-Tab issue.
+
+**Bread** — Huge thanks for SM3 IDA coding.
 
 xeSM3 was built on years of experimentation, reverse engineering, testing, and knowledge shared throughout the Spider-Man modding community.
 
