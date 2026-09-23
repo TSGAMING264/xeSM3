@@ -171,27 +171,15 @@ These items have been tested as listed, but that does not claim that every possi
 
 ## Blender & Model Tools
 
-This repository includes source for two Blender tools:
+The Blender add-ons now have their own dedicated repository: [**SM3 Blender Tools**](https://github.com/TSGAMING264/SM3-Blender-Tools).
 
-### SM3 Blender Toolkit v1.1.7
-
-Source: [`tools/SM3-Blender-Toolkit/`](tools/SM3-Blender-Toolkit/)
-
-Provides Spider-Man 3 MESH and SKEL import/export support, index-based vertex-group renaming, and object/section-aware export workflows.
-
-### SM3 Material Combiner Toolkit v1.2.0
-
-Source: [`tools/SM3-Material-Combiner/`](tools/SM3-Material-Combiner/)
-
-Provides SM3 material-database tools, MAT-to-TEX research support, texture loading/conversion, material cleanup, and slot-safe atlas generation.
-
-These tools are still an evolving part of the project. Read [docs/BLENDER.md](docs/BLENDER.md) and each tool's included README before using them.
+That repository contains the SM3 Blender Toolkit and SM3 Material Combiner Toolkit, with their source, installation guidance, and Blender-specific documentation kept together. Blender tool source is no longer bundled in the xeSM3 loader repository.
 
 ## Documentation
 
 - [Installation and troubleshooting](docs/INSTALL.md)
 - [Making loose-resource mods](docs/MAKING_MODS.md)
-- [Blender and model tools](docs/BLENDER.md)
+- [SM3 Blender Tools repository](https://github.com/TSGAMING264/SM3-Blender-Tools)
 - [Changelog](CHANGELOG.md)
 
 ## Notes
@@ -210,7 +198,7 @@ See [CHANGELOG.md](CHANGELOG.md) for the supplied public release history.
 
 ## Blender Tools & Community Help
 
-The core xeSM3 loader and v0.1.0 renderer work are release-tested, but the Blender side of the project is still an area I would like to improve.
+The core xeSM3 loader and v0.1.0 renderer work are release-tested. Blender-side development now lives in the separate [SM3 Blender Tools repository](https://github.com/TSGAMING264/SM3-Blender-Tools).
 
 Community contributions are especially welcome for improving:
 
