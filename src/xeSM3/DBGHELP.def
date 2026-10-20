@@ -1,3 +1,0 @@
-LIBRARY "dbghelp"
-EXPORTS
-    SymInitialize=_Proxy_SymInitialize@12

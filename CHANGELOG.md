@@ -1,3 +1,11 @@
+# v0.1.5
+
+- Improved the post-processing fix and restored bloom, using the supplied completed source and single-DLL build.
+- Moved xeSM3 to one `dbghelp.dll`; the separate `xeSM3.dll` is no longer shipped.
+- Special thanks to Bread and ArchiverOfTriviality (Arc) for their contributions toward these improvements.
+- Upgrade: close the game; remove the previous xeSM3-owned `dbghelp.dll` and separate `xeSM3.dll`. Remove `winmm.dll` only if it came from an earlier xeSM3 test build. Install the new `dbghelp.dll`, `xeSM3.ini`, and `Mods` beside `Game.exe`. Do not remove another mod's `winmm.dll` or RaimiHook's `d3d9.dll`.
+- Known issue: RaimiHook's debug menu currently requires keyboard input; controller input does not operate the menu properly.
+
 # v0.1.0
 
 Final tested first public release.
