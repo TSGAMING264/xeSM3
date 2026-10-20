@@ -7,7 +7,7 @@
 
 xeSM3 is a Spider-Man 3 PC mod loader and native renderer restoration project created by TSGAMING264.
 
-**v0.1.0** adds strict loose-resource mod loading, WRAP resource support, and restored Xbox-derived post-processing features using Spider-Man 3 PC's dormant/native rendering systems. It targets **Spider-Man 3 PC / Windows x86**.
+**v0.1.5** improves the post-processing fix and restored bloom and moves xeSM3 to a single `dbghelp.dll`. The project targets **Spider-Man 3 PC / Windows x86**. WRAP support was introduced in v0.1.0.
 
 ## Features
 
@@ -44,7 +44,6 @@ Supported loose resource types:
 Download the latest packaged release from [GitHub Releases](https://github.com/TSGAMING264/xeSM3/releases/latest), then copy these items beside `Game.exe`:
 
 - `dbghelp.dll`
-- `xeSM3.dll`
 - `xeSM3.ini`
 - `Mods\`
 
@@ -54,12 +53,13 @@ Your game directory should look like this:
 Spider-Man 3\
 ├── Game.exe
 ├── dbghelp.dll
-├── xeSM3.dll
 ├── xeSM3.ini
 └── Mods\
 ```
 
 See [docs/INSTALL.md](docs/INSTALL.md) for detailed installation and troubleshooting.
+
+Before upgrading from an older xeSM3 build, close the game and remove the previous xeSM3-owned `dbghelp.dll` and separate `xeSM3.dll`. Remove `winmm.dll` only if it came from an earlier xeSM3 test build; do not remove a DLL owned by another mod. Then install the new `dbghelp.dll`, `xeSM3.ini`, and `Mods` folder beside `Game.exe`. Leaving old xeSM3 DLLs installed can cause conflicts. RaimiHook's `d3d9.dll` is not part of this migration.
 
 ## Enabling Mods
 
@@ -81,13 +81,24 @@ The name on the left must exactly match the mod directory name inside `Mods`.
 
 ## PostFX Configuration
 
-The Retail Xbox and Debug Xbox PostFX routes are alternative renderer profiles. Enable only one Xbox profile at a time. Keep `PostProcessFix=100` when using either Xbox profile.
-
-**Debug Xbox (qualified and recommended):**
+The v0.1.5 default improves the native post-processing fix with restored bloom. Keep `PostProcessFix=100`. The shipped configuration is:
 
 ```ini
 [PostProcessing]
 PostProcessFix=100
+RestoredBloom=100
+PostProcessRetailXbox=0
+PostProcessDebugXbox=0
+```
+
+The Retail Xbox and Debug Xbox routes remain alternative renderer profiles. Enable only one Xbox profile at a time if switching from restored bloom.
+
+**Debug Xbox alternative:**
+
+```ini
+[PostProcessing]
+PostProcessFix=100
+RestoredBloom=0
 PostProcessRetailXbox=0
 PostProcessDebugXbox=100
 ```
@@ -97,17 +108,18 @@ PostProcessDebugXbox=100
 ```ini
 [PostProcessing]
 PostProcessFix=100
+RestoredBloom=0
 PostProcessRetailXbox=100
 PostProcessDebugXbox=0
 ```
 
 `0` means disabled and `100` means enabled. Other public numeric values are not supported. Do not enable both Xbox profiles at the same time.
 
-- `PostProcessDebugXbox`: the currently qualified and recommended Xbox-derived restoration route.
+- `PostProcessDebugXbox`: the Debug Xbox-derived alternative route.
 - `PostProcessRetailXbox`: the retained retail Xbox comparison/restoration route.
 - `PostProcessFix`: master/native PostFX fix enablement; keep this set to `100` when using either Xbox profile.
 
-The PostFX implementation restores and reuses native Spider-Man 3 PC renderer infrastructure. It is compiled directly into `xeSM3.dll`; it is not an external ReShade-style filter and does not require `d3d9.dll` for normal operation.
+The PostFX implementation restores and reuses native Spider-Man 3 PC renderer infrastructure. It is compiled directly into `dbghelp.dll`; it is not an external ReShade-style filter and does not require `d3d9.dll` for normal operation.
 
 ## Making Mods
 
@@ -169,6 +181,8 @@ xeSM3 uses `dbghelp.dll` for its bootstrap. Original/base RaimiHook normally use
 
 These items have been tested as listed, but that does not claim that every possible combination of third-party tools is supported.
 
+Known issue: RaimiHook's debug menu currently requires keyboard input. Controller input does not operate the menu properly; use the keyboard as the workaround.
+
 ## Blender & Model Tools
 
 The Blender add-ons now have their own dedicated repository: [**SM3 Blender Tools**](https://github.com/TSGAMING264/SM3-Blender-Tools).
@@ -181,11 +195,12 @@ That repository contains the SM3 Blender Toolkit and SM3 Material Combiner Toolk
 - [Making loose-resource mods](docs/MAKING_MODS.md)
 - [SM3 Blender Tools repository](https://github.com/TSGAMING264/SM3-Blender-Tools)
 - [Changelog](CHANGELOG.md)
+- [v0.1.5 release notes](docs/RELEASE_NOTES_v0.1.5.md)
 
 ## Notes
 
-- xeSM3 v0.1.0 targets the Windows x86 release of Spider-Man 3 PC.
-- xeSM3 v0.1.0 includes the tested V10.5.72 native PostFX integration and Alt-Tab/D3D9 Reset recovery.
+- xeSM3 v0.1.5 targets the Windows x86 release of Spider-Man 3 PC.
+- v0.1.0 introduced WRAP support, native PostFX integration, and Alt-Tab/D3D9 Reset recovery; v0.1.5 improves the PostFX fix and restored bloom.
 - Only `Mods\mods.config.ini` is authoritative; a root-level `mods.config.ini` is ignored.
 - Duplicate mod entries use last-assignment-wins behavior.
 - Public Release builds intentionally compile startup diagnostic popups out.
@@ -198,7 +213,7 @@ See [CHANGELOG.md](CHANGELOG.md) for the supplied public release history.
 
 ## Blender Tools & Community Help
 
-The core xeSM3 loader and v0.1.0 renderer work are release-tested. Blender-side development now lives in the separate [SM3 Blender Tools repository](https://github.com/TSGAMING264/SM3-Blender-Tools).
+Blender-side development lives in the separate [SM3 Blender Tools repository](https://github.com/TSGAMING264/SM3-Blender-Tools).
 
 Community contributions are especially welcome for improving:
 
@@ -214,9 +229,9 @@ This is an invitation to improve the Blender tooling, not a warning that the xeS
 
 > I have a lot of faith in the Spider-Man modding community, and I hope people can continue improving the Blender side and build on the foundation xeSM3 provides.
 
-The v0.1.0 PostFX restoration is included directly in `xeSM3.dll` and uses the tested narrow D3D9 Reset and DrawPrimitive hook pair.
+The PostFX restoration is included directly in the single `dbghelp.dll`.
 
-**xeSM3 v0.1.0 is the beginning, not the end. ❤️**
+**xeSM3 continues to grow with the community. ❤️**
 
 ## ❤️ Special Thanks
 
@@ -232,9 +247,9 @@ The v0.1.0 PostFX restoration is included directly in `xeSM3.dll` and uses the t
 
 **Tmprogamer** — Huge thanks for beta testing xeSM3 and putting the loader through real-world testing.
 
-**ArchiverOfTriviality** — Huge thanks for beta testing xeSM3 and helping throughout development and release QA, including verifying stability, compatibility, and mod-loading behavior, as well as helping identify the D3D9 device-reset / Alt-Tab issue and pushing important compatibility tests such as the 4GB Patch, non-Spider-Man model testing, and DXVK / Vulkan compatibility.
+**ArchiverOfTriviality (Arc)** — Huge thanks for beta testing xeSM3 and helping throughout development and release QA, including verifying stability, compatibility, and mod-loading behavior, helping identify the D3D9 device-reset / Alt-Tab issue, pushing compatibility tests such as the 4GB Patch, non-Spider-Man model testing, and DXVK / Vulkan compatibility, and contributing toward the v0.1.5 post-processing and restored-bloom improvements.
 
-**Bread** — Huge thanks for SM3 IDA coding.
+**Bread** — Huge thanks for SM3 IDA coding and contributing toward the v0.1.5 post-processing and restored-bloom improvements.
 
 xeSM3 was built on years of experimentation, reverse engineering, testing, and knowledge shared throughout the Spider-Man modding community.
 
@@ -242,7 +257,7 @@ Thank you to everyone who helped make this possible.
 
 ## Source Code and Releases
 
-The frozen Visual Studio source is organized under [`src/xeSM3/`](src/xeSM3/). Blender tool sources are organized separately under [`tools/`](tools/).
+The current Visual Studio source and single-DLL build script are organized under [`src/xeSM3/`](src/xeSM3/). Blender tool sources live in the separate [SM3 Blender Tools repository](https://github.com/TSGAMING264/SM3-Blender-Tools).
 
 Compiled DLLs and packaged release ZIPs are intentionally not committed to the normal source tree. Official tested packages are distributed through [GitHub Releases](https://github.com/TSGAMING264/xeSM3/releases/latest).
 

@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32"><Configuration>Debug</Configuration><Platform>Win32</Platform></ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32"><Configuration>Release</Configuration><Platform>Win32</Platform></ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals"><VCProjectVersion>17.0</VCProjectVersion><Keyword>Win32Proj</Keyword><ProjectGuid>{7D94CC53-2255-4CB4-B178-A6990BC01010}</ProjectGuid><RootNamespace>XESM3</RootNamespace><WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion></PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration"><ConfigurationType>DynamicLibrary</ConfigurationType><UseDebugLibraries>true</UseDebugLibraries><PlatformToolset>v143</PlatformToolset><CharacterSet>Unicode</CharacterSet></PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration"><ConfigurationType>DynamicLibrary</ConfigurationType><UseDebugLibraries>false</UseDebugLibraries><PlatformToolset>v143</PlatformToolset><WholeProgramOptimization>true</WholeProgramOptimization><CharacterSet>Unicode</CharacterSet></PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <PropertyGroup>
+    <XESM3Proxy Condition="'$(XESM3Proxy)'==''">winmm</XESM3Proxy>
+    <XESM3ProxyDefinition Condition="'$(XESM3Proxy)'=='winmm'">WINMM.def</XESM3ProxyDefinition>
+    <XESM3ProxyDefinition Condition="'$(XESM3Proxy)'=='dbghelp'">DBGHELP_SINGLE.def</XESM3ProxyDefinition>
+    <IntDir Condition="'$(XESM3Proxy)'=='winmm'">$(ProjectDir).xesm3_build\payload\x86\$(Configuration)\</IntDir>
+    <OutDir Condition="'$(XESM3Proxy)'=='winmm'">$(ProjectDir)bin\x86\$(Configuration)\</OutDir>
+    <IntDir Condition="'$(XESM3Proxy)'=='dbghelp'">$(ProjectDir).xesm3_build\payload\dbghelp\x86\$(Configuration)\</IntDir>
+    <OutDir Condition="'$(XESM3Proxy)'=='dbghelp'">$(ProjectDir)bin\dbghelp\x86\$(Configuration)\</OutDir><TargetName>$(XESM3Proxy)</TargetName>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile><WarningLevel>Level3</WarningLevel><SDLCheck>true</SDLCheck><PreprocessorDefinitions>WIN32;_DEBUG;XESM3_PUBLIC_BUILD;XESM3_X86_ONLY=1;XESM3_BOOT_DIAGNOSTIC=1;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions><ConformanceMode>true</ConformanceMode><PrecompiledHeader>NotUsing</PrecompiledHeader><RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary></ClCompile>
+    <Link><AdditionalDependencies>User32.lib;%(AdditionalDependencies)</AdditionalDependencies><SubSystem>Windows</SubSystem><GenerateDebugInformation>true</GenerateDebugInformation><EnableUAC>false</EnableUAC><TargetMachine>MachineX86</TargetMachine><ModuleDefinitionFile>$(XESM3ProxyDefinition)</ModuleDefinitionFile><AdditionalOptions>/PDBALTPATH:%_PDB% %(AdditionalOptions)</AdditionalOptions></Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile><WarningLevel>Level3</WarningLevel><FunctionLevelLinking>true</FunctionLevelLinking><IntrinsicFunctions>true</IntrinsicFunctions><SDLCheck>true</SDLCheck><PreprocessorDefinitions>WIN32;NDEBUG;XESM3_PUBLIC_BUILD;XESM3_X86_ONLY=1;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions><ConformanceMode>true</ConformanceMode><PrecompiledHeader>NotUsing</PrecompiledHeader><Optimization>MaxSpeed</Optimization><WholeProgramOptimization>true</WholeProgramOptimization><RuntimeLibrary>MultiThreaded</RuntimeLibrary><OmitFramePointers>true</OmitFramePointers></ClCompile>
+    <Link><AdditionalDependencies>User32.lib;%(AdditionalDependencies)</AdditionalDependencies><SubSystem>Windows</SubSystem><EnableCOMDATFolding>true</EnableCOMDATFolding><OptimizeReferences>true</OptimizeReferences><GenerateDebugInformation>true</GenerateDebugInformation><EnableUAC>false</EnableUAC><TargetMachine>MachineX86</TargetMachine><ModuleDefinitionFile>$(XESM3ProxyDefinition)</ModuleDefinitionFile><AdditionalOptions>/PDBALTPATH:%_PDB% %(AdditionalOptions)</AdditionalOptions></Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="dllmain.cpp"><WarningLevel>Level4</WarningLevel></ClCompile>
+    <ClCompile Include="WinmmProxy.cpp" Condition="'$(XESM3Proxy)'=='winmm'"><WarningLevel>Level4</WarningLevel></ClCompile>
+    <ClCompile Include="DbgHelpSingleProxy.cpp" Condition="'$(XESM3Proxy)'=='dbghelp'"><WarningLevel>Level4</WarningLevel><TreatWarningAsError>true</TreatWarningAsError></ClCompile>
+    <ClCompile Include="XESM3Detours.cpp"><WarningLevel>Level4</WarningLevel></ClCompile>
+    <ClCompile Include="XESM3ResourceRedirector.cpp" />
+    <ClCompile Include="XESM3RuntimeOptions.cpp" />
+    <ClCompile Include="PostFXResearch.cpp" />
+    <ClCompile Include="BloomRestoration.cpp"><WarningLevel>Level4</WarningLevel><LanguageStandard>stdcpp20</LanguageStandard></ClCompile>
+    <ClCompile Include="BloomSceneAlphaRoute.cpp"><WarningLevel>Level4</WarningLevel><LanguageStandard>stdcpp20</LanguageStandard></ClCompile>
+  </ItemGroup>
+  <ItemGroup><ClInclude Include="XESM3X86Only.hpp" /><ClInclude Include="XESM3ResourceRedirector.hpp" /><ClInclude Include="XESM3RuntimeOptions.hpp" /><ClInclude Include="PostFXResearch.hpp" /></ItemGroup>
+  <ItemGroup><None Include="packages.config" /><None Include="XESM3.def" /><None Include="xeSM3.ini" /></ItemGroup>
+
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets"><Import Project="packages\Detours.4.0.1\build\native\Detours.targets" Condition="Exists('packages\Detours.4.0.1\build\native\Detours.targets')" /></ImportGroup>
+  <Target Name="EnsureXESM3Dirs" BeforeTargets="PrepareForBuild"><MakeDir Directories="$(IntDir);$(OutDir)" /></Target>
+  <Target Name="VerifyXESM3Proxy" BeforeTargets="PrepareForBuild"><Error Condition="'$(XESM3Proxy)'!='winmm' And '$(XESM3Proxy)'!='dbghelp'" Text="Unsupported xeSM3 proxy." /></Target>
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild"><Error Condition="!Exists('packages\Detours.4.0.1\build\native\Detours.targets')" Text="Missing Detours package." /></Target>
+  <Target Name="VerifySingleDllOutput" AfterTargets="Build">
+    <Error Condition="!Exists('$(TargetPath)')" Text="Single DLL output missing." />
+    <Message Importance="high" Text="xeSM3 single DLL: $(TargetPath)" />
+  </Target>
+</Project>

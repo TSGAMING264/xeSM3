@@ -1,21 +1,22 @@
 # Installing xeSM3
 
-xeSM3 v0.1.0 is a Windows x86 mod loader and native PostFX restoration project for *Spider-Man 3*.
+xeSM3 v0.1.5 is a Windows x86 mod loader and native PostFX restoration project for *Spider-Man 3*. It uses a single `dbghelp.dll`.
 
 ## What You Need
 
 - An installed copy of the original Spider-Man 3 PC game
-- The tested xeSM3 v0.1.0 release package from [GitHub Releases](https://github.com/TSGAMING264/xeSM3/releases/tag/v0.1.0)
+- The xeSM3 v0.1.5 release package from [GitHub Releases](https://github.com/TSGAMING264/xeSM3/releases)
 - Permission to copy files into the directory containing `Game.exe`
 
 Do not download random DLL mirrors. Use the release package published by TSGAMING264.
 
 ## Installation
 
-1. Download and extract the latest xeSM3 release ZIP.
-2. Open the folder containing the game's `Game.exe`.
-3. Copy `dbghelp.dll`, `xeSM3.dll`, `xeSM3.ini`, and the complete `Mods` directory beside `Game.exe`.
-4. Keep the filenames unchanged.
+1. Download and extract the xeSM3 v0.1.5 release ZIP.
+2. Close the game. If upgrading, remove the previous xeSM3-owned `dbghelp.dll` and separate `xeSM3.dll` from beside `Game.exe`. Remove `winmm.dll` only if it came from an earlier xeSM3 test build; leave another mod's `winmm.dll` alone. Do not remove RaimiHook's `d3d9.dll` or any Windows system DLL.
+3. Open the folder containing the game's `Game.exe`.
+4. Copy the new `dbghelp.dll`, `xeSM3.ini`, and the complete `Mods` directory beside `Game.exe`.
+5. Keep the filenames unchanged. Back up your existing `Mods` configuration before replacing it.
 
 The result should be:
 
@@ -23,7 +24,6 @@ The result should be:
 Spider-Man 3\
 ├── Game.exe
 ├── dbghelp.dll
-├── xeSM3.dll
 ├── xeSM3.ini
 └── Mods\
     ├── mods.config.ini
@@ -32,17 +32,28 @@ Spider-Man 3\
     └── filelist.apkf.paths.txt
 ```
 
-Both DLLs are required. `dbghelp.dll` is the bootstrap, and it loads `xeSM3.dll` from the same directory.
+Only the new `dbghelp.dll` is required for xeSM3 v0.1.5. The old separate `xeSM3.dll` can cause conflicts if left installed.
 
 ## PostFX Configuration
 
-`xeSM3.ini` uses the same strict public toggle values: `0` is disabled and `100` is enabled. The Retail Xbox and Debug Xbox PostFX routes are alternative renderer profiles. Enable only one Xbox profile at a time. Keep `PostProcessFix=100` when using either Xbox profile.
-
-Debug Xbox (qualified and recommended):
+`xeSM3.ini` uses strict public toggle values: `0` is disabled and `100` is enabled. The shipped v0.1.5 default improves the post-processing fix with restored bloom:
 
 ```ini
 [PostProcessing]
 PostProcessFix=100
+RestoredBloom=100
+PostProcessRetailXbox=0
+PostProcessDebugXbox=0
+```
+
+The Retail Xbox and Debug Xbox routes are alternative renderer profiles. Enable only one Xbox profile at a time. Keep `PostProcessFix=100` when using either Xbox profile.
+
+Debug Xbox alternative:
+
+```ini
+[PostProcessing]
+PostProcessFix=100
+RestoredBloom=0
 PostProcessRetailXbox=0
 PostProcessDebugXbox=100
 ```
@@ -52,11 +63,12 @@ Retail Xbox:
 ```ini
 [PostProcessing]
 PostProcessFix=100
+RestoredBloom=0
 PostProcessRetailXbox=100
 PostProcessDebugXbox=0
 ```
 
-Do not enable both Xbox profiles at the same time. The shipped default uses the qualified Debug Xbox route. `PostProcessRetailXbox` remains available for retail Xbox comparison/restoration, while `PostProcessFix` controls the master/native fix. The renderer restoration is compiled into `xeSM3.dll`; normal xeSM3 operation does not require `d3d9.dll` or RaimiHook.
+Do not enable both Xbox profiles at the same time. The shipped default uses restored bloom with both Xbox routes disabled. `PostProcessRetailXbox` remains available for retail Xbox comparison/restoration, while `PostProcessFix` controls the master/native fix. The renderer restoration is compiled into `dbghelp.dll`; normal xeSM3 operation does not require `d3d9.dll` or RaimiHook.
 
 ## Enabling a Mod
 
@@ -97,16 +109,18 @@ xeSM3 uses `dbghelp.dll`. Original/base RaimiHook normally uses `d3d9.dll`, whil
 
 This compatibility list does not claim that every combination of third-party tools has been tested.
 
+Known issue: RaimiHook's debug menu currently requires keyboard input. Controller input does not operate the menu properly; use the keyboard as the workaround.
+
 ## Troubleshooting
 
 ### The game does not start
 
 - Confirm that you installed the Windows x86 xeSM3 release.
-- Confirm that both DLLs are directly beside the real `Game.exe`, not inside a second nested folder.
+- Confirm that the new `dbghelp.dll` is directly beside the real `Game.exe`, not inside a second nested folder.
 - Restore a clean game executable if you are testing an unsupported executable build.
 - Remove unrelated proxy DLL experiments and test again from a known game setup.
 
-Do not rename `dbghelp.dll` or `xeSM3.dll`, and do not replace the bootstrap with a `d3d9.dll` version.
+Do not rename `dbghelp.dll` or replace it with a `d3d9.dll` version. Remove any old xeSM3-owned `xeSM3.dll`.
 
 ### The game starts, but the mod does not load
 
@@ -132,4 +146,4 @@ When a future xeSM3 version is released, follow its release notes. Back up your 
 
 ## Uninstalling
 
-Remove `dbghelp.dll`, `xeSM3.dll`, and `xeSM3.ini` from beside `Game.exe`. Remove the `Mods` directory only if you also want to remove your installed mods and configuration.
+Remove the xeSM3-owned `dbghelp.dll` and `xeSM3.ini` from beside `Game.exe`. Remove the `Mods` directory only if you also want to remove your installed mods and configuration.
